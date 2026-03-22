@@ -9,9 +9,9 @@ run it, and observe Docker's layer caching in action.
 ## 🏗️ Dockerfile → Image → Container
 
 ```
-Dockerfile               Image                   Container
+Dockerfile               Image                    Container
 (you write this)    →    (Docker builds this)  →  (Docker runs this)
-Text instructions        Layered package           Live process
+Text instructions        Layered package          Live process
 
 Each Dockerfile instruction = one cached layer.
 Unchanged layers reuse cache → builds go from 3 min → 10 seconds.
@@ -21,7 +21,7 @@ Unchanged layers reuse cache → builds go from 3 min → 10 seconds.
 
 ## 🔑 Dockerfile Instructions
 
-```dockerfile
+```
 FROM        → Start from this base image           (always first)
 WORKDIR     → Set working directory inside image
 COPY        → Copy file from your PC into image
@@ -34,14 +34,13 @@ ENTRYPOINT  → Fixed executable; CMD provides its arguments
 
 ---
 
-## 📁 Files for Today
+## 📁 Files
 
 ```
-day-02-dockerfile\
+02-dockerfile\
 ├── README.md          ← you are here
 ├── HelloDocker.java   ← Java program to containerise
-├── Dockerfile         ← heavily commented — read every line
-└── run.ps1            ← PowerShell script: build, run, explore
+└──  Dockerfile         ← heavily commented — read every line
 ```
 
 ---
@@ -50,7 +49,7 @@ day-02-dockerfile\
 
 ### Step 1 — Compile the Java file manually first
 ```powershell
-cd week-01-docker-basics\day-02-dockerfile
+cd docker-basics\02-dockerfile
 
 # Compile and run it locally so you know what it should do
 javac HelloDocker.java
@@ -160,13 +159,3 @@ CMD ["java", "HelloDocker"]
 > Like `.gitignore` for Docker. Lists files to exclude from the build context. Always exclude `target\`, `.git\`, `.idea\` — reduces build time and prevents secrets accidentally entering images.
 
 ---
-
-## 🔖 Today's Git Commit
-
-```powershell
-.\scripts\daily-commit.ps1 -Day 02 -Msg "first dockerfile - FROM WORKDIR COPY RUN ENV CMD, layer caching"
-```
-
----
-
-## ➡️ Tomorrow — Day 3: Volumes & Networking

@@ -73,7 +73,7 @@ EXPOSE 8080
 #
 # ALWAYS use JSON array (exec form):
 #   ✅ CMD ["java", "HelloDocker"]   — Java gets SIGTERM directly → graceful shutdown
-#   ❌ CMD java HelloDocker           — runs via /bin/sh → shell absorbs SIGTERM
+#   ❌ CMD java HelloDocker          — runs via /bin/sh → shell absorbs SIGTERM
 #
 # Shell form matters in production: docker stop (and K8s pod termination)
 # send SIGTERM. If your app never receives it, it can't shut down gracefully.
