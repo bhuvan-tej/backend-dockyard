@@ -66,11 +66,10 @@ networks: {}           # Custom network definitions
   1. Creates the network
   2. Creates the volumes
   3. Builds any images that have a build section
-  4. Starts containers in dependency order
-     postgres starts first because app depends_on postgres
+  4. Starts containers in dependency order, postgres starts first because app depends_on postgres
 ```
 
-## Files in This Folder
+## 📁 Files in this Folder
 
 ---
 ```
@@ -79,11 +78,13 @@ networks: {}           # Custom network definitions
 │   ├── Main.java           Java HTTP server that connects to PostgreSQL
 │   └── Dockerfile          multi-stage build for the app
 ├── docker-compose.yml      defines both services, network and volume
+├── QUICK_REFERENCE.md      summary of Docker compose commands
 └── README.md               you are here
 ```
 
 ## Step 1 — Start the Full Stack
 
+---
 ```powershell
 # Make sure you are in the 02-compose folder
 # docker-compose.yml must be in the current folder for these commands to work
@@ -100,11 +101,10 @@ cd docker\docker-intermediate\02-compose
 #   then start the app
 docker compose up -d
 ```
- 
----
 
 ## Step 2 — Watch the Logs
 
+---
 ```powershell
 # Follow logs from all services at once
 # Each line is prefixed with the service name so you know which container it came from
@@ -118,21 +118,19 @@ docker compose logs -f app
 # Follow logs from only the postgres service
 docker compose logs -f postgres
 ```
- 
----
 
 ## Step 3 — See All Running Services
 
+---
 ```powershell
 # Show the status of all services defined in docker-compose.yml
 # You should see both postgres and app with status running
 docker compose ps
 ```
- 
----
 
 ## Step 4 — Test the App
-
+ 
+---
 ```powershell
 # Open the app in your browser
 # The app increments a visit counter stored in PostgreSQL on every request
@@ -147,11 +145,10 @@ curl http://localhost:8080
 # The count is stored in PostgreSQL so it persists across app restarts
 curl http://localhost:8080
 ```
- 
----
 
 ## Step 5 — Prove the Database Is Separate From the App
-
+ 
+---
 ```powershell
 # Restart only the app container without touching postgres
 # The visit count should continue from where it left off
@@ -161,11 +158,10 @@ docker compose restart app
 # Check the app again — visits continue from before
 curl http://localhost:8080
 ```
- 
----
 
 ## Step 6 — Shell Into a Running Service
-
+ 
+---
 ```powershell
 # Open a shell inside the postgres container
 # docker compose exec works like docker exec but uses the service name
@@ -193,10 +189,9 @@ env
 exit
 ```
 
----
-
 ## Step 7 — Scale a Service
 
+---
 ```powershell
 # Run 3 instances of the app service
 # Useful for understanding how load balancing would work
@@ -210,11 +205,10 @@ docker compose ps
 # Scale back down to 1
 docker compose up -d --scale app=1
 ```
- 
----
 
 ## Step 8 — Stop Everything
-
+ 
+---
 ```powershell
 # Stop all containers and remove them
 # The postgres_data volume is preserved so your data is safe
@@ -225,11 +219,10 @@ docker compose up -d
 curl http://localhost:8080
 # Visit count continues from where it was before stopping
 ```
- 
----
 
 ## Step 9 — Stop and Wipe Everything
-
+ 
+---
 ```powershell
 # Stop all containers, remove them, AND delete the volumes
 # This wipes the database completely
@@ -241,5 +234,30 @@ docker compose down -v
 docker compose up -d
 curl http://localhost:8080
 ```
- 
+
+## 📝 Interview Questions
+
 ---
+**Q: What is Docker Compose and when do you use it?**
+> Docker Compose defines a multi-container application in a YAML file
+and manages it with single commands. Use it for local development
+and simple single-host deployments. For multi-host production
+deployments at scale, use Kubernetes.
+
+**Q: What does depends_on with condition service_healthy do?**
+> It makes one service wait until another service passes its
+healthcheck before starting. Without the condition it only waits
+for the container to start, not for the service inside to be ready.
+PostgreSQL needs a few seconds after the container starts before
+it accepts connections.
+
+**Q: How does service discovery work in Docker Compose?**
+> All services in a Compose file share a network. Docker provides
+built-in DNS so each service is reachable by its service name.
+The app connects to postgres using the hostname postgres which
+Docker resolves to the postgres container IP automatically.
+
+**Q: What is the difference between docker compose down and down -v?**
+> down removes containers and the network but keeps volumes.
+down -v also removes all named volumes which deletes your data.
+Never use -v unless you want to start completely fresh.

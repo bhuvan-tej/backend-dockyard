@@ -47,16 +47,24 @@ public class Main {
 
         // Handle all requests to the root path /
         server.createContext("/", exchange -> {
+            int visits;
 
-            // Every time someone hits the URL increment the visit count
-            int visits = incrementAndGetVisits();
+            try {
+                visits = incrementAndGetVisits();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                String errorResponse = "{\"error\": \"Database error\"}";
+                exchange.sendResponseHeaders(500, errorResponse.length());
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(errorResponse.getBytes());
+                }
+                return;
+            }
 
-            // Build a simple JSON response
             String response = "{\"message\": \"Hello from Docker Compose!\", \"visits\": " + visits + "}";
-
-            // Send the response back
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, response.length());
+
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response.getBytes());
             }

@@ -1,4 +1,4 @@
-## Docker Compose Commands Reference
+## 📋 Docker Compose Commands Reference
 
 ```powershell
 # Start all services in the background
