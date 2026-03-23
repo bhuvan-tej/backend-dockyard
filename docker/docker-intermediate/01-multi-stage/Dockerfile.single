@@ -1,0 +1,43 @@
+# Dockerfile.single — The Wrong Way (for comparison only)
+#
+# This is a single stage Dockerfile for a Java app.
+# Build it and check the image size with: docker images
+# Then compare it to Dockerfile.multistage
+#
+# Build: docker build -f Dockerfile.single -t app:single .
+
+# Start from the full JDK image
+# This image includes the compiler, debugger, all build tools
+# It is around 400MB just for the base image
+FROM eclipse-temurin:17-jdk-alpine
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy the Java source file from your machine into the container
+COPY HelloMultiStage.java .
+
+# Compile the Java file at build time
+# The compiled .class file stays in the same image alongside everything else
+RUN javac HelloMultiStage.java
+
+# Set a default name to greet
+ENV APP_NAME="Single Stage App"
+
+# Run the compiled class when the container starts
+CMD ["java", "HelloMultiStage"]
+
+# PROBLEM WITH THIS APPROACH
+#
+# The final image contains:
+#   - The full JDK with compiler and debugger   (not needed at runtime)
+#   - The javac compiler                        (not needed at runtime)
+#   - The .java source file                     (security risk, not needed)
+#   - All build tools                           (not needed at runtime)
+#
+# At runtime you only need the JRE to execute the .class file
+# Everything else is wasted space and a potential security risk
+#
+# Check the image size after building:
+#   docker images app
+# You will see app:single is much larger than app:multi

@@ -1,0 +1,141 @@
+# docker-compose.yml
+#
+# Defines a multi-container application with two services:
+#   1. postgres  — the database
+#   2. app       — our Java HTTP server
+#
+# Start everything:      docker compose up -d
+# Stop everything:       docker compose down
+# Stop and wipe data:    docker compose down -v
+# View logs:             docker compose logs -f
+# View logs one service: docker compose logs -f app
+
+# The version of the Compose file format
+# Version 3.8 supports all modern features including health checks
+version: "3.8"
+
+services:
+  # ────────────────────────────────────────────────────────────────────
+  # SERVICE 1 — postgres
+  # The PostgreSQL database container
+  # ────────────────────────────────────────────────────────────────────
+  postgres:
+    # Use the official PostgreSQL 15 image on Alpine Linux
+    # Alpine keeps the image small
+    image: postgres:15-alpine
+
+    # Give the container a readable name
+    # Without this Docker generates a random name like compose_postgres_1
+    container_name: compose-postgres
+
+    # Set environment variables inside the postgres container
+    # These are the credentials PostgreSQL uses when it first starts
+    environment:
+      # The database superuser username
+      POSTGRES_USER: appuser
+      # The database superuser password
+      POSTGRES_PASSWORD: apppass
+      # The name of the database to create on first start
+      POSTGRES_DB: appdb
+
+    # Map container port 5432 to your Windows port 5432
+    # Format is "host-port:container-port"
+    # This lets you connect to the database from IntelliJ or DBeaver
+    # using localhost:5432 with the credentials above
+    ports:
+     - "5432:5432"
+
+    # Mount a named volume to the PostgreSQL data directory
+    # This means your database data survives container restarts
+    # Without this all data is lost every time you run docker compose down
+    volumes:
+     - postgres_data:/var/lib/postgresql/data
+
+    # Healthcheck tells Docker how to know if PostgreSQL is ready
+    # Docker will not mark this service as healthy until the check passes
+    # The app service uses this to wait before starting
+    healthcheck:
+      # pg_isready checks if PostgreSQL is accepting connections
+      # -U appuser uses our database username
+      test: [ "CMD-SHELL", "pg_isready -U appuser" ]
+      # Run the check every 5 seconds
+      interval: 5s
+      # Consider it failed if it takes more than 5 seconds
+      timeout: 5s
+      # Mark as unhealthy after 5 consecutive failures
+      retries: 5
+
+    # Connect this service to our custom network
+    # All services on the same network can reach each other by service name
+    networks:
+      - app-network
+
+  # ────────────────────────────────────────────────────────────────────
+  # SERVICE 2 — app
+  # Our Java HTTP server
+  # ────────────────────────────────────────────────────────────────────
+  app:
+    # Instead of using a pre-built image, build one from our Dockerfile
+    # context is the folder Docker sends to the build process
+    # dockerfile specifies which Dockerfile inside that folder to use
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+
+    # Give the container a readable name
+    container_name: compose-app
+
+    # Map container port 8080 to your Windows port 8080
+    # Open http://localhost:8080 in your browser to see the app
+    ports:
+      - "8080:8080"
+
+    # Set environment variables for the app container
+    # These are read by Main.java using System.getenv()
+    environment:
+      # The JDBC connection URL for PostgreSQL
+      # Notice the hostname is "postgres" — the service name above
+      # Docker DNS resolves "postgres" to the postgres container IP automatically
+      # This is why we never hardcode IP addresses in Docker
+      DB_URL: jdbc:postgresql://postgres:5432/appdb
+      # Database username — must match POSTGRES_USER above
+      DB_USER: appuser
+      # Database password — must match POSTGRES_PASSWORD above
+      DB_PASS: apppass
+
+    # depends_on controls startup order
+    # The app service will not start until postgres passes its healthcheck
+    # This prevents the app from crashing because it tries to connect
+    # to a database that is not ready yet
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    # Connect to the same network as postgres
+    # Without this the app cannot reach postgres by name
+    networks:
+      - app-network
+
+    # Restart the app automatically if it crashes
+    restart: on-failure
+
+# ────────────────────────────────────────────────────────────────────
+# VOLUMES
+# Named volumes are managed by Docker
+# They persist data even when containers are removed
+# ────────────────────────────────────────────────────────────────────
+volumes:
+  # This volume stores the PostgreSQL database files
+  # Lives inside WSL2 on Windows, managed by Docker
+  postgres_data:
+
+# ────────────────────────────────────────────────────────────────────
+# NETWORKS
+# A custom network so all services find each other by service name
+# ────────────────────────────────────────────────────────────────────
+networks:
+  # All services joined to this network can reach each other by name
+  # The app reaches postgres at the hostname "postgres"
+  # This is Docker DNS — automatic, zero configuration
+  app-network:
+    driver: bridge

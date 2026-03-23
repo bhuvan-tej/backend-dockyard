@@ -1,0 +1,79 @@
+# Dockerfile.multistage — The Right Way
+#
+# A multi-stage build uses multiple FROM instructions in one Dockerfile.
+# Each FROM starts a new stage. Only the final stage becomes the image.
+# Everything in earlier stages is thrown away after the build.
+#
+# Result: a tiny image that contains only what is needed to run the app.
+#
+# Build: docker build -f Dockerfile.multistage -t app:multi .
+# Run:   docker run --rm app:multi
+
+# ─────────────────────────────────────────────────────────────────────
+# STAGE 1 — builder
+#
+# This stage compiles the code.
+# It uses the full JDK because we need javac to compile.
+# This entire stage is DISCARDED after the build completes.
+# Nothing from here ends up in the final image
+# except what we explicitly copy with COPY --from=builder
+# ─────────────────────────────────────────────────────────────────────
+
+# AS builder gives this stage a name so we can reference it later
+FROM eclipse-temurin:17-jdk-alpine AS builder
+
+# Set working directory for the build stage
+WORKDIR /build
+
+# Copy the source file into the builder stage
+COPY HelloMultiStage.java .
+
+# Compile the Java file
+# HelloMultiStage.class is now in /build inside this stage
+RUN javac HelloMultiStage.java
+
+# ─────────────────────────────────────────────────────────────────────
+# STAGE 2 — runtime
+#
+# This stage is the final image that gets pushed and run.
+# It uses the JRE (Java Runtime Environment) not the JDK.
+# JRE can run .class files but cannot compile .java files.
+# JRE image is much smaller because it has no compiler or build tools.
+# ─────────────────────────────────────────────────────────────────────
+
+# Fresh start from a smaller base image — only the JRE, no compiler
+FROM eclipse-temurin:17-jre-alpine AS runtime
+
+# Set working directory for the runtime stage
+WORKDIR /app
+
+# Copy ONLY the compiled .class file from the builder stage
+# --from=builder means take this file from the stage named builder
+# /build/HelloMultiStage.class is where we compiled it in stage 1
+# . means copy it to the current WORKDIR which is /app
+COPY --from=builder /build/HelloMultiStage.class .
+
+# Set environment variable for the app name
+ENV APP_NAME="Multi Stage App"
+
+# Run the compiled class
+# No .java source file in this image — only the compiled .class
+CMD ["java", "HelloMultiStage"]
+
+# ─────────────────────────────────────────────────────────────────────
+# WHAT THE FINAL IMAGE CONTAINS
+#
+# JRE only — can run Java but cannot compile it    (needed)
+# HelloMultiStage.class — the compiled program     (needed)
+#
+# WHAT WAS LEFT BEHIND IN THE BUILDER STAGE
+#
+# Full JDK with compiler and debugger              (not needed at runtime)
+# HelloMultiStage.java source file                 (not needed, security risk)
+# All build tools                                  (not needed at runtime)
+#
+# Compare sizes after building both:
+#   docker build -f Dockerfile.single    -t app:single .
+#   docker build -f Dockerfile.multistage -t app:multi  .
+#   docker images app
+# ─────────────────────────────────────────────────────────────────────
