@@ -50,9 +50,9 @@ Learning Docker the right way — not just what commands to run but why each one
 | Basic review and final exercise                           | `docker/docker-basics/05-review`             | ✅ Done    |
 | Multi-stage builds — smaller safer production images      | `docker/docker-intermediate/01-multi-stage`  | ✅ Done    |
 | Docker Compose — full stack with one command              | `docker/docker-intermediate/02-compose`      | ✅ Done    |
-| Image optimisation — layers, caching, .dockerignore       | `docker/docker-intermediate/03-optimisation` | 🔄 Next   |
-| Pushing images to GitHub Container Registry               | `docker/docker-intermediate/04-registry`     | ⬜ Pending |
-| Spring Boot containerised with profiles and Actuator      | `docker/spring-docker/01-spring-setup`       | ⬜ Pending |
+| Image optimisation — layers, caching, .dockerignore       | `docker/docker-intermediate/03-optimisation` | ✅ Done   |
+| Pushing images to GitHub Container Registry               | `docker/docker-intermediate/04-registry`     | ✅ Done  |
+| Spring Boot containerised with profiles and Actuator      | `docker/spring-docker/01-spring-setup`       | 🔄 Next  |
 | Redis caching with Spring Boot in Docker                  | `docker/spring-docker/02-redis-cache`        | ⬜ Pending |
 | Full production Compose stack                             | `docker/spring-docker/03-full-compose`       | ⬜ Pending |
 
