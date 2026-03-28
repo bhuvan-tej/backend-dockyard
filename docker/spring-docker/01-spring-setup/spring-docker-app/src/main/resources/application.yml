@@ -1,0 +1,105 @@
+# application.yml
+#
+# This is the main configuration file for the Spring Boot app.
+# It defines settings for all environments as a base.
+# Profile specific files like application-docker.yml override these values
+# when a specific profile is active.
+#
+# Spring Boot automatically loads this file on startup.
+# Profile specific files are loaded on top of this one.
+
+spring:
+
+  application:
+    # The name of the application
+    # Used in logs and in the Actuator info endpoint
+    name: spring-docker-app
+
+  # Database configuration
+  datasource:
+    # Default URL points to localhost for running the app locally in IntelliJ
+    # When running in Docker this gets overridden by application-docker.yml
+    url: jdbc:postgresql://localhost:5432/appdb
+    username: appuser
+    password: apppass
+    # HikariCP is the default connection pool in Spring Boot
+    # It manages a pool of database connections for better performance
+    hikari:
+      # Maximum number of connections in the pool
+      maximum-pool-size: 10
+      # Minimum number of idle connections kept ready
+      minimum-idle: 5
+
+  # JPA and Hibernate configuration
+  jpa:
+    # hibernate.ddl-auto controls how Hibernate manages the database schema
+    # update means Hibernate creates tables if they don't exist
+    # and updates them if the entity classes change
+    # Never use create-drop in production as it wipes your data on restart
+    hibernate:
+      ddl-auto: update
+    # Show the SQL queries Hibernate generates in the logs
+    # Useful during development to understand what queries are running
+    # Set to false in production to reduce log noise
+    show-sql: true
+    properties:
+      hibernate:
+        # Format the SQL in logs so it is readable
+        format_sql: true
+        # Tell Hibernate we are using PostgreSQL
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Redis configuration
+  data:
+    redis:
+      # Default points to localhost for running locally
+      # Overridden by application-docker.yml when running in Docker
+      host: localhost
+      port: 6379
+      # Connection timeout in milliseconds
+      timeout: 2000ms
+
+# Server configuration
+server:
+  # The port the app listens on
+  port: 8080
+  # Enable graceful shutdown
+  # When the app receives a stop signal it finishes handling
+  # in-flight requests before shutting down
+  # This is important in Kubernetes which sends SIGTERM on pod termination
+  shutdown: graceful
+
+# Spring Boot Actuator configuration
+# Actuator exposes endpoints for health checks, metrics and info
+# Kubernetes uses the health endpoints for liveness and readiness probes
+management:
+  endpoints:
+    web:
+      exposure:
+        # Expose these Actuator endpoints over HTTP
+        # health  — used by Kubernetes liveness and readiness probes
+        # info    — shows app information
+        # metrics — shows application metrics
+        include: health,info,metrics
+  endpoint:
+    health:
+      # Show full health details including database and redis status
+      show-details: always
+      # Enable separate liveness and readiness probes
+      # Kubernetes uses /actuator/health/liveness and /actuator/health/readiness
+      probes:
+        enabled: true
+  health:
+    # Enable the liveness state health indicator
+    livenessstate:
+      enabled: true
+    # Enable the readiness state health indicator
+    readinessstate:
+      enabled: true
+
+# Application info shown at /actuator/info
+info:
+  app:
+    name: spring-docker-app
+    description: Spring Boot app demonstrating Docker containerisation
+    version: 1.0.0spring.application.name=spring-docker-app
