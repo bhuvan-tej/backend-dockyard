@@ -9,36 +9,17 @@ This is the closest to a real production Docker setup you will see before moving
 ## 🏗️ Architecture
 
 ---
-```
-Your Browser
-     │
-     │  http://localhost:80
-     ▼
-┌─────────────┐
-│    Nginx    │  port 80 — the only port exposed to outside
-│             │  reverse proxy, single entry point
-└──────┬──────┘
-       │
-       │  http://app:8080  (internal Docker DNS)
-       ▼
-┌─────────────┐
-│ Spring Boot │  port 8080 — NOT exposed to outside
-│     app     │  only reachable via Nginx
-└──────┬──────┘
-       │
-       ├──────────────────────────┐
-       ▼                          ▼
-┌─────────────┐          ┌─────────────┐
-│  PostgreSQL │          │    Redis    │
-│  port 5432  │          │  port 6379  │
-└─────────────┘          └─────────────┘
-```
+<p align="center">
+  <img src="docs/architecture-nginx.png" width="750"/>
+</p>
 
 ## 📁 Project Structure
 
 ---
 ```
 spring-docker-app/
+├── docs/
+│   └── architecture-nginx.png                    architecture diagram
 ├── src/
 │   ├── main/
 │   │   ├── java/com/dockyard/springdockerapp/
@@ -63,6 +44,8 @@ spring-docker-app/
 ├── docker-compose.yml                            full stack with Nginx
 ├── .dockerignore                                 excludes target .idea .git
 ├── .gitignore
+├── RUNNING.md                                    steps to run the application(locally & in docker)
+├── TESTING.md                                    steps to test the application(locally & in docker)
 └── pom.xml
 ```
 

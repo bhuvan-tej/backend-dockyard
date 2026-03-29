@@ -41,20 +41,20 @@ backend-dockyard/
 ---
 Learning Docker the right way — not just what commands to run but why each one exists, what goes wrong and how to debug it.
 
-| Topic                                                     | Folder                                       | Status    |
-|-----------------------------------------------------------|----------------------------------------------|-----------|
-| What is Docker, images, containers, WSL2 on Windows       | `docker/docker-basics/01-what-is-docker`     | ✅ Done    |
-| Dockerfile — FROM WORKDIR COPY RUN ENV CMD, layer caching | `docker/docker-basics/02-dockerfile`         | ✅ Done    |
-| Volumes and networking — persistence and container DNS    | `docker/docker-basics/03-volumes-networks`   | ✅ Done    |
-| Debugging — logs, exec, inspect, stats, exit codes        | `docker/docker-basics/04-debugging`          | ✅ Done    |
-| Basic review and final exercise                           | `docker/docker-basics/05-review`             | ✅ Done    |
-| Multi-stage builds — smaller safer production images      | `docker/docker-intermediate/01-multi-stage`  | ✅ Done    |
-| Docker Compose — full stack with one command              | `docker/docker-intermediate/02-compose`      | ✅ Done    |
-| Image optimisation — layers, caching, .dockerignore       | `docker/docker-intermediate/03-optimisation` | ✅ Done   |
-| Pushing images to GitHub Container Registry               | `docker/docker-intermediate/04-registry`     | ✅ Done  |
-| Spring Boot containerised with profiles and Actuator      | `docker/spring-docker/01-spring-setup`       | ✅ Done  |
-| Redis caching with Spring Boot in Docker                  | `docker/spring-docker/02-redis-cache`        | ⬜ Pending |
-| Full production Compose stack                             | `docker/spring-docker/03-full-compose`       | ⬜ Pending |
+| Topic                                                     | Folder                                       | Status |
+|-----------------------------------------------------------|----------------------------------------------|--------|
+| What is Docker, images, containers, WSL2 on Windows       | `docker/docker-basics/01-what-is-docker`     | ✅ Done |
+| Dockerfile — FROM WORKDIR COPY RUN ENV CMD, layer caching | `docker/docker-basics/02-dockerfile`         | ✅ Done |
+| Volumes and networking — persistence and container DNS    | `docker/docker-basics/03-volumes-networks`   | ✅ Done |
+| Debugging — logs, exec, inspect, stats, exit codes        | `docker/docker-basics/04-debugging`          | ✅ Done |
+| Basic review and final exercise                           | `docker/docker-basics/05-review`             | ✅ Done |
+| Multi-stage builds — smaller safer production images      | `docker/docker-intermediate/01-multi-stage`  | ✅ Done |
+| Docker Compose — full stack with one command              | `docker/docker-intermediate/02-compose`      | ✅ Done |
+| Image optimisation — layers, caching, .dockerignore       | `docker/docker-intermediate/03-optimisation` | ✅ Done |
+| Pushing images to GitHub Container Registry               | `docker/docker-intermediate/04-registry`     | ✅ Done |
+| Spring Boot containerised with profiles and Actuator      | `docker/spring-docker/01-spring-setup`       | ✅ Done |
+| Redis caching with Spring Boot in Docker                  | `docker/spring-docker/02-redis-cache`        | ✅ Done |
+| Full production Compose stack                             | `docker/spring-docker/03-full-compose`       | ✅ Done |
 
 ## ☸️ Kubernetes
 

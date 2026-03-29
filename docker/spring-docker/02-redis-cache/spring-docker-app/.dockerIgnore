@@ -43,3 +43,7 @@ README.md
 # ── Test files ────────────────────────────────────────────────────────
 # Test source code should never end up in a production image
 src/test/
+
+# ── Architecture diagrams ─────────────────────────────────────────────
+# Docs
+docs/
