@@ -1,0 +1,45 @@
+# .dockerignore — spring-docker-app
+#
+# Excludes files from the Docker build context.
+# The build context is everything sent to the Docker daemon before building.
+# Excluding large folders like target/ makes builds significantly faster.
+
+# ── Maven build output ────────────────────────────────────────────────
+# target/ contains the compiled classes and built JARs from previous builds
+# Docker always builds fresh inside the container using the Maven wrapper
+# Sending 200MB of target/ on every build wastes time
+target/
+
+# ── IntelliJ IDEA ─────────────────────────────────────────────────────
+# IDE files are specific to your machine and have no use inside a container
+.idea/
+*.iml
+out/
+
+# ── Git history ────────────────────────────────────────────────────────
+# Your entire git history should never be inside a Docker image
+.git/
+.gitignore
+.gitattributes
+
+# ── OS files ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Logs ──────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Secrets ───────────────────────────────────────────────────────────
+.env
+*.env.*
+*.key
+*.pem
+
+# ── Documentation ─────────────────────────────────────────────────────
+# README files are not needed inside a running container
+README.md
+
+# ── Test files ────────────────────────────────────────────────────────
+# Test source code should never end up in a production image
+src/test/

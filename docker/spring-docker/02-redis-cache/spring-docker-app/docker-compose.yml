@@ -1,0 +1,178 @@
+# docker-compose.yml — spring-docker-app
+#
+# Defines the full stack:
+#   postgres   the PostgreSQL database
+#   redis      the Redis cache (used in 02-redis-cache)
+#   app        the Spring Boot application
+#
+# Start everything:      docker compose up -d
+# Stop everything:       docker compose down
+# Rebuild after changes: docker compose up -d --build
+# View all logs:         docker compose logs -f
+# View app logs only:    docker compose logs -f app
+
+version: "3.8"
+
+services:
+
+  # ──────────────────────────────────────────────────────────────────
+  # PostgreSQL — Primary Database
+  # ──────────────────────────────────────────────────────────────────
+  postgres:
+
+    # Official PostgreSQL 15 on Alpine Linux — small and stable
+    image: postgres:15-alpine
+
+    # Readable container name — shows up in docker ps and docker logs
+    container_name: spring-postgres
+
+    # Environment variables PostgreSQL reads on first startup
+    # These must match the values in application-docker.yml
+    environment:
+      # The database superuser username
+      POSTGRES_USER: appuser
+      # The database superuser password
+      POSTGRES_PASSWORD: apppass
+      # The name of the database to create automatically
+      POSTGRES_DB: appdb
+
+    # Map container port 5432 to your Windows port 5432
+    # This lets you connect from IntelliJ database panel or DBeaver
+    # using localhost:5432 with the credentials above
+    ports:
+      - "5432:5432"
+
+    # Mount a named volume to the PostgreSQL data directory
+    # Data persists across container restarts and docker compose down
+    # Only docker compose down -v deletes this data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Healthcheck so the app service waits for postgres to be ready
+    # The app service uses depends_on with condition: service_healthy
+    # which means it will not start until this healthcheck passes
+    healthcheck:
+      # pg_isready checks if PostgreSQL is accepting connections
+      # -U appuser uses our database user for the check
+      test: ["CMD-SHELL", "pg_isready -U appuser"]
+      # Check every 5 seconds
+      interval: 5s
+      # Fail if no response within 5 seconds
+      timeout: 5s
+      # Mark unhealthy after 5 consecutive failures
+      retries: 5
+      # Do not count failures in the first 10 seconds — postgres needs time to start
+      start_period: 10s
+
+    # Connect to our custom network
+    networks:
+      - app-network
+
+  # ──────────────────────────────────────────────────────────────────
+  # Redis — Cache
+  # Used in 02-redis-cache to add caching to the Spring Boot app
+  # Included here so the app can start without errors
+  # ──────────────────────────────────────────────────────────────────
+  redis:
+
+    # Official Redis 7 on Alpine Linux
+    image: redis:7-alpine
+
+    container_name: spring-redis
+
+    # Map container port 6379 to your Windows port 6379
+    ports:
+      - "6379:6379"
+
+    # Healthcheck using the redis-cli ping command
+    # redis-cli ping returns PONG when Redis is ready
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    networks:
+      - app-network
+
+  # ──────────────────────────────────────────────────────────────────
+  # Spring Boot Application
+  # ──────────────────────────────────────────────────────────────────
+  app:
+
+    # Build the image from the Dockerfile in the current folder
+    # context: . means use the current folder as the build context
+    # dockerfile: Dockerfile tells Docker which file to use
+    # Docker Compose builds this image automatically on docker compose up
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Readable container name
+    container_name: spring-app
+
+    # Map container port 8080 to your Windows port 8080
+    # Open http://localhost:8080 to reach the app
+    ports:
+      - "8080:8080"
+
+    # Environment variables passed into the Spring Boot app
+    environment:
+      # Activate the docker Spring profile
+      # This tells Spring Boot to load application-docker.yml
+      # which overrides localhost URLs with Docker service names
+      SPRING_PROFILES_ACTIVE: docker
+
+      # These override the values in application-docker.yml
+      # Keeping credentials here makes them easy to change
+      # without editing the yml files
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/appdb
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: apppass
+
+      # Redis connection — "redis" is the service name above
+      # Docker DNS resolves "redis" to the redis container IP
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # JVM memory flags — passed as an environment variable
+      # UseContainerSupport makes JVM respect container memory limits
+      # MaxRAMPercentage=75.0 uses 75% of container memory for heap
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+    # Do not start the app until both postgres and redis pass their healthchecks
+    # Without this the app starts before the database is ready
+    # and throws connection errors on startup
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    # Restart the app automatically if it crashes
+    # on-failure only restarts on non-zero exit codes
+    # not when you manually run docker compose down
+    restart: on-failure
+
+    # Connect to the same network as postgres and redis
+    # Required for Docker DNS to resolve service names
+    networks:
+      - app-network
+
+# ──────────────────────────────────────────────────────────────────
+# VOLUMES
+# ──────────────────────────────────────────────────────────────────
+volumes:
+  # Stores PostgreSQL database files outside the container
+  # Survives docker compose down but not docker compose down -v
+  postgres_data:
+
+# ──────────────────────────────────────────────────────────────────
+# NETWORKS
+# ──────────────────────────────────────────────────────────────────
+networks:
+  # Custom bridge network so all services find each other by name
+  # The app reaches postgres at hostname "postgres"
+  # The app reaches redis at hostname "redis"
+  app-network:
+    driver: bridge
