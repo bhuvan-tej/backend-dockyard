@@ -1,0 +1,33 @@
+# application-docker.yml
+#
+# This file is the Docker profile configuration.
+# It activates when SPRING_PROFILES_ACTIVE=docker is set.
+#
+# In Docker the app cannot connect to localhost because localhost
+# inside a container refers to the container itself, not your machine.
+# Instead we use the Docker service names defined in docker-compose.yml
+# Docker DNS resolves these names to the correct container IPs automatically.
+#
+# This file only overrides values that are different in Docker.
+# Everything else falls back to application.yml.
+
+spring:
+
+  datasource:
+    # "postgres" is the service name in docker-compose.yml
+    # Docker DNS resolves "postgres" to the postgres container IP
+    # This replaces the localhost URL from application.yml
+    url: jdbc:postgresql://postgres:5432/appdb
+    username: appuser
+    password: apppass
+
+  data:
+    redis:
+      # "redis" is the service name in docker-compose.yml
+      # Docker DNS resolves "redis" to the redis container IP
+      host: redis
+      port: 6379
+
+  jpa:
+    # Hide SQL logs in Docker to keep container logs clean
+    show-sql: false

@@ -1,0 +1,215 @@
+# docker-compose.yml — full-compose
+#
+# Full production-like stack:
+#   postgres   database
+#   redis      cache
+#   app        Spring Boot application
+#   nginx      reverse proxy — single entry point
+#
+# The app is NOT exposed directly on port 8080 anymore
+# All traffic goes through Nginx on port 80
+#
+# Start:         docker compose up -d --build
+# Stop:          docker compose down
+# Logs all:      docker compose logs -f
+# Logs one:      docker compose logs -f nginx
+
+services:
+
+  # ──────────────────────────────────────────────────────────────────
+  # PostgreSQL — Primary Database
+  # ──────────────────────────────────────────────────────────────────
+  postgres:
+
+    image: postgres:15-alpine
+    container_name: full-postgres
+
+    # Environment variables PostgreSQL reads on first startup
+    # These must match the values in application-docker.yml
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppass
+      POSTGRES_DB: appdb
+
+    # Port 5432 is only exposed for local tools like DBeaver or IntelliJ
+    # In a real production setup you would remove this
+    # and only allow internal container-to-container access
+    ports:
+      - "5432:5432"
+
+    # Mount a named volume to the PostgreSQL data directory
+    # Data persists across container restarts and docker compose down
+    # Only docker compose down -v deletes this data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Healthcheck so the app service waits for postgres to be ready
+    # The app service uses depends_on with condition: service_healthy
+    # which means it will not start until this healthcheck passes
+    healthcheck:
+      # pg_isready checks if PostgreSQL is accepting connections
+      # -U appuser uses our database user for the check
+      test: ["CMD-SHELL", "pg_isready -U appuser"]
+      # Check every 5 seconds
+      interval: 5s
+      # Fail if no response within 5 seconds
+      timeout: 5s
+      # Mark unhealthy after 5 consecutive failures
+      retries: 5
+      # Do not count failures in the first 10 seconds — postgres needs time to start
+      start_period: 10s
+
+    # Connect to our custom network
+    networks:
+      - app-network
+
+  # ──────────────────────────────────────────────────────────────────
+  # Redis — Cache
+  # ──────────────────────────────────────────────────────────────────
+  redis:
+
+    image: redis:7-alpine
+    container_name: full-redis
+
+    # Port 6379 exposed only for local inspection with redis-cli
+    # Remove in real production
+    ports:
+      - "6379:6379"
+
+    # Healthcheck using the redis-cli ping command
+    # redis-cli ping returns PONG when Redis is ready
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    networks:
+      - app-network
+
+  # ──────────────────────────────────────────────────────────────────
+  # Spring Boot Application
+  # Notice: NO ports section here
+  # The app is intentionally not exposed directly to your Windows machine
+  # All traffic must go through Nginx on port 80
+  # This is how production setups work — app servers are internal only
+  # ──────────────────────────────────────────────────────────────────
+  app:
+
+    # Build the image from the Dockerfile in the current folder
+    # context: . means use the current folder as the build context
+    # dockerfile: Dockerfile tells Docker which file to use
+    # Docker Compose builds this image automatically on docker compose up
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Readable container name
+    container_name: full-app
+
+    # No ports mapping here — app is only reachable via Nginx
+    # Nginx reaches it using Docker DNS: http://app:8080
+
+    # Environment variables passed into the Spring Boot app
+    environment:
+      # Activate the docker Spring profile
+      # This tells Spring Boot to load application-docker.yml
+      # which overrides localhost URLs with Docker service names
+      SPRING_PROFILES_ACTIVE: docker
+
+      # These override the values in application-docker.yml
+      # Keeping credentials here makes them easy to change
+      # without editing the yml files
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/appdb
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: apppass
+
+      # Redis connection — "redis" is the service name above
+      # Docker DNS resolves "redis" to the redis container IP
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # JVM memory flags — passed as an environment variable
+      # UseContainerSupport makes JVM respect container memory limits
+      # MaxRAMPercentage=75.0 uses 75% of container memory for heap
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+    # Do not start the app until both postgres and redis pass their healthchecks
+    # Without this the app starts before the database is ready
+    # and throws connection errors on startup
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    # Healthcheck on the app itself using the Actuator endpoint
+    # Nginx depends_on app with this healthcheck
+    # so Nginx only starts routing traffic when the app is ready
+    healthcheck:
+      # wget checks the liveness endpoint
+      # -q quiet mode, no output
+      # -O /dev/null discards the response body
+      # --spider just checks if the URL is reachable
+      test: [ "CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+    # Restart the app automatically if it crashes
+    # on-failure only restarts on non-zero exit codes
+    # not when you manually run docker compose down
+    restart: on-failure
+
+    # Connect to the same network as postgres and redis
+    # Required for Docker DNS to resolve service names
+    networks:
+      - app-network
+
+  # ──────────────────────────────────────────────────────────────────
+  # Nginx — Reverse Proxy
+  # The only service exposed to your Windows machine on port 80
+  # All requests go through here before reaching the app
+  # ──────────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: full-nginx
+
+    # Port 80 is the only externally exposed port in the whole stack
+    # This is the single entry point for all traffic
+    ports:
+      - "80:80"
+
+    # Mount our custom nginx.conf into the container
+    # :ro means read-only — the container cannot modify this file
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+    # Wait for the app to be healthy before starting Nginx
+    # Without this Nginx starts routing traffic before the app is ready
+    # and clients get 502 Bad Gateway errors during startup
+    depends_on:
+      app:
+        condition: service_healthy
+
+    networks:
+      - app-network
+
+# ──────────────────────────────────────────────────────────────────
+# VOLUMES
+# ──────────────────────────────────────────────────────────────────
+volumes:
+  # Stores PostgreSQL database files outside the container
+  # Survives docker compose down but not docker compose down -v
+  postgres_data:
+
+# ──────────────────────────────────────────────────────────────────
+# NETWORKS
+# ──────────────────────────────────────────────────────────────────
+networks:
+  # Custom bridge network so all services find each other by name
+  # The app reaches postgres at hostname "postgres"
+  # The app reaches redis at hostname "redis"
+  app-network:
+    driver: bridge
