@@ -1,0 +1,82 @@
+# deployment.yaml
+#
+# A Deployment — the correct way to run apps in Kubernetes.
+#
+# A Deployment:
+#   Maintains desired replica count at all times
+#   Restarts Pods automatically if they crash
+#   Reschedules Pods if a node fails
+#   Supports zero-downtime rolling updates
+#   Supports instant rollback with one command
+#
+# Apply:  kubectl apply -f deployment.yaml -n backend-dockyard
+# Delete: kubectl delete -f deployment.yaml -n backend-dockyard
+
+# Deployments live in the apps API group
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+  name: my-app
+  namespace: backend-dockyard
+  labels:
+    app: my-app
+    topic: pods-deployments
+
+spec:
+
+  # replicas is the desired number of Pods to keep running
+  # Kubernetes continuously reconciles actual count to match this
+  # If a Pod crashes a replacement is created within seconds
+  replicas: 3
+
+  # selector links the Deployment to the Pods it manages
+  # The Deployment manages all Pods whose labels match matchLabels
+  # This MUST match the labels in template.metadata.labels below
+  selector:
+    matchLabels:
+      app: my-app
+
+  # strategy controls how new versions replace old Pods
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # maxUnavailable: at most 1 Pod can be down during the update
+      # With replicas=3 at least 2 Pods always serve traffic
+      maxUnavailable: 1
+      # maxSurge: at most 1 extra Pod can exist during the update
+      # Kubernetes creates the new Pod before removing the old one
+      maxSurge: 1
+
+  # template is the blueprint for each Pod this Deployment creates
+  template:
+    metadata:
+      # These labels MUST match spec.selector.matchLabels above
+      # The Deployment uses these to find and manage its Pods
+      labels:
+        app: my-app
+        topic: pods-deployments
+
+    spec:
+      containers:
+        - name: my-app
+          image: nginx:alpine
+
+          ports:
+            - containerPort: 80
+              name: http
+
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+
+      # terminationGracePeriodSeconds is how long Kubernetes waits
+      # for the Pod to finish handling requests after sending SIGTERM
+      # before force killing it with SIGKILL
+      # Default is 30 seconds — matches Spring Boot graceful shutdown
+      terminationGracePeriodSeconds: 30

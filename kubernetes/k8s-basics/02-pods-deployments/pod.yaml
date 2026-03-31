@@ -1,0 +1,60 @@
+# pod.yaml
+#
+# A standalone Pod — for learning purposes only.
+# In real projects NEVER deploy bare Pods.
+# Always use a Deployment (see deployment.yaml).
+#
+# This file exists so you can see what happens when a Pod dies
+# with no Deployment watching over it — nothing recreates it.
+#
+# Apply:  kubectl apply -f pod.yaml -n backend-dockyard
+# Delete: kubectl delete -f pod.yaml -n backend-dockyard
+
+# apiVersion tells Kubernetes which API group handles this resource
+# Pod is a core resource so it uses v1 with no group prefix
+apiVersion: v1
+
+# kind is the type of resource we are creating
+kind: Pod
+
+metadata:
+  # name is the unique identifier for this Pod in the namespace
+  name: my-first-pod
+
+  # namespace is where this Pod lives
+  # matches the namespace we created in 01-concepts
+  namespace: backend-dockyard
+
+  # labels are key-value pairs attached to the object
+  # used for filtering and selecting objects
+  # kubectl get pods -l app=my-first-pod
+  labels:
+    app: my-first-pod
+    topic: pods-deployments
+
+spec:
+  containers:
+    # name of the container inside the Pod
+    - name: nginx-container
+
+      # image to run — nginx:alpine is a small nginx image
+      image: nginx:alpine
+
+      # ports documents which port the container listens on
+      # this is documentation only — does not expose the port externally
+      ports:
+        - containerPort: 80
+          name: http
+
+      # resources define CPU and memory limits
+      # requests: minimum guaranteed resources
+      # limits: maximum allowed — container killed if exceeded
+      resources:
+        requests:
+          # 64Mi means 64 mebibytes of memory
+          memory: "64Mi"
+          # 50m means 50 millicores = 0.05 CPU cores
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
