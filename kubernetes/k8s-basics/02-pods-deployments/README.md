@@ -40,6 +40,29 @@ spec:         the desired state you want Kubernetes to maintain
 
 ## ⚙️ Exercises
 
+### ✅ Prerequisites Check
+
+---
+```
+# Start minikube fresh
+minikube start --driver=docker --memory=4096 --cpus=2
+
+minikube status
+kubectl get nodes
+# Expected: minikube   Ready   control-plane
+
+# The namespace was deleted when you ran minikube delete
+# Recreate it before applying any YAML
+kubectl create namespace backend-dockyard
+
+# Verify
+kubectl get namespaces
+# backend-dockyard should appear
+
+# Navigate to the folder
+cd kubernetes\k8s-basics\02-pods-deployments
+```
+
 ---
 ### 🧪 Exercise 1 — Deploy a Bare Pod and See the Problem
 

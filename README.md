@@ -65,7 +65,7 @@ Learning Docker the right way — not just what commands to run but why each one
 |---------------------------------------------------|-------------------------------------------------|-----------|
 | K8s concepts — control plane, nodes, core objects | `kubernetes/k8s-basics/01-concepts`             | ✅ Done    |
 | Pods and Deployments — self healing and scaling   | `kubernetes/k8s-basics/02-deployments`          | ✅ Done    |
-| Services — ClusterIP, NodePort, LoadBalancer      | `kubernetes/k8s-basics/03-services`             | ⬜ Pending |
+| Services — ClusterIP, NodePort, LoadBalancer      | `kubernetes/k8s-basics/03-services`             | ✅ Done    |
 | ConfigMap and Secrets                             | `kubernetes/k8s-intermediate/01-config-secrets` | ⬜ Pending |
 | Liveness, Readiness and Startup probes            | `kubernetes/k8s-intermediate/02-probes`         | ⬜ Pending |
 | Ingress and routing                               | `kubernetes/k8s-intermediate/03-ingress`        | ⬜ Pending |
