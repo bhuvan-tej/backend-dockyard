@@ -1,0 +1,54 @@
+# service-clusterip.yaml
+#
+# A ClusterIP Service — the default Service type.
+#
+# What problem does a Service solve?
+#
+# Pods are temporary. They get replaced constantly — crashes,
+# rolling updates, scaling. Every new Pod gets a new IP address.
+# You cannot hardcode Pod IPs in your app.
+#
+# A Service gives you:
+#   A stable DNS name that never changes
+#   A stable IP that never changes
+#   Automatic load balancing across all matching Pods
+#
+# ClusterIP is only reachable INSIDE the cluster.
+# Other Pods reach it by its name — my-app-service.
+# Not accessible from your Windows machine directly.
+#
+# Apply:  kubectl apply -f service-clusterip.yaml -n backend-dockyard
+# Delete: kubectl delete -f service-clusterip.yaml -n backend-dockyard
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: my-app-service
+  namespace: backend-dockyard
+  labels:
+    app: my-app
+
+spec:
+  # type: ClusterIP is the default — internal only
+  # Only reachable from inside the cluster
+  # Other Pods use: http://my-app-service:80
+  type: ClusterIP
+
+  # selector decides which Pods this Service routes traffic to
+  # The Service sends traffic to all Pods with label app=my-app
+  # This matches the labels in deployment.yaml template.metadata.labels
+  selector:
+    app: my-app
+
+  ports:
+    # port is the port the Service listens on inside the cluster
+    # Other Pods connect to my-app-service:80
+    - port: 80
+      # targetPort is the port on the Pod to forward traffic to
+      # Must match containerPort in the Deployment
+      targetPort: 80
+      # protocol defaults to TCP
+      protocol: TCP
+      # name is optional but useful for documentation
+      name: http

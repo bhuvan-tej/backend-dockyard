@@ -1,0 +1,50 @@
+# service-nodeport.yaml
+#
+# A NodePort Service — exposes the app outside the cluster.
+#
+# NodePort opens a port on EVERY node in the cluster.
+# Traffic hitting any node on that port is forwarded to the Pods.
+#
+# This is how you access your app from your Windows machine
+# during local development with minikube.
+#
+# Port flow:
+#   Your Windows machine
+#     → minikube node IP : nodePort (30080)
+#     → Service : port (80)
+#     → Pod : targetPort (80)
+#
+# Apply:  kubectl apply -f service-nodeport.yaml -n backend-dockyard
+# Access: minikube service my-app-nodeport -n backend-dockyard
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: my-app-nodeport
+  namespace: backend-dockyard
+  labels:
+    app: my-app
+
+spec:
+  # type: NodePort exposes the Service on each node's IP
+  # Makes the app accessible from outside the cluster
+  # Used for local development and testing
+  # In production use LoadBalancer or Ingress instead
+  type: NodePort
+
+  # Same selector as ClusterIP — routes to the same Pods
+  selector:
+    app: my-app
+
+  ports:
+    # port is the Service port inside the cluster
+    - port: 80
+      # targetPort is the Pod port to forward to
+      targetPort: 80
+      # nodePort is the port opened on every cluster node
+      # Range must be 30000-32767
+      # If you omit this Kubernetes assigns one randomly
+      nodePort: 30080
+      protocol: TCP
+      name: http
