@@ -56,6 +56,30 @@ Zero configuration needed.
 ## ⚙️ Exercises
 
 ---
+### ✅ Prerequisites Check
+```
+minikube start
+
+# Check cluster is up
+kubectl get nodes
+# Expected: minikube   Ready   control-plane
+
+# Check your namespace still exists
+kubectl get namespaces
+# backend-dockyard should be there
+
+# If namespace is gone recreate it
+kubectl create namespace backend-dockyard
+
+cd kubernetes\k8s-basics\03-services
+
+# Deploy the app first
+kubectl apply -f ../02-pods-deployments/deployment.yaml -n backend-dockyard
+
+# Verify Pods are running
+kubectl get pods -n backend-dockyard
+```
+
 ### 🧪 Exercise 1 — Deploy the App First
 
 ```powershell
