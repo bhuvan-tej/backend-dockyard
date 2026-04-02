@@ -1,0 +1,57 @@
+# configmap.yaml
+#
+# A ConfigMap stores non-sensitive configuration data as key-value pairs.
+# Pods read this data as environment variables or mounted files.
+#
+# WHY USE ConfigMap INSTEAD OF HARDCODING VALUES IN THE IMAGE?
+#
+# Without ConfigMap:
+#   Config is baked into the Docker image
+#   Different config for dev/staging/prod means different images
+#   Changing one value requires rebuilding and redeploying the image
+#
+# With ConfigMap:
+#   Config lives outside the image in the cluster
+#   Same image runs in all environments
+#   Change config without rebuilding anything — just update the ConfigMap
+#   Kubernetes injects the values into the Pod at startup
+#
+# Apply:  kubectl apply -f configmap.yaml -n backend-dockyard
+# View:   kubectl get configmap app-config -n backend-dockyard
+# Detail: kubectl describe configmap app-config -n backend-dockyard
+
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: app-config
+  namespace: backend-dockyard
+  labels:
+    app: my-app
+
+# data contains the key-value pairs
+# Keys become environment variable names in the Pod
+# Values are plain text — never put passwords here
+data:
+
+  # Application settings
+  APP_NAME: "spring-docker-app"
+  APP_ENV: "kubernetes"
+  LOG_LEVEL: "INFO"
+  SERVER_PORT: "8080"
+
+  # Database connection URL
+  # Notice: no password here — that goes in a Secret
+  DB_URL: "jdbc:postgresql://postgres-service:5432/appdb"
+  DB_NAME: "appdb"
+  DB_USERNAME: "appuser"
+
+  # Redis connection
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+
+  # Multi-line value example
+  # Use | for a literal block scalar (preserves newlines)
+  APP_DESCRIPTION: |
+    Spring Boot application running in Kubernetes.
+    Demonstrates ConfigMap usage for externalised configuration.

@@ -1,0 +1,84 @@
+# deployment-with-config.yaml
+#
+# A Deployment that reads config from ConfigMap and Secret.
+# Shows two ways to inject config into a Pod:
+#   1. envFrom  — load ALL keys from ConfigMap or Secret as env vars
+#   2. env      — load specific keys one by one
+#
+# Apply:  kubectl apply -f deployment-with-config.yaml -n backend-dockyard
+# Delete: kubectl delete -f deployment-with-config.yaml -n backend-dockyard
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: my-app-with-config
+  namespace: backend-dockyard
+  labels:
+    app: my-app-with-config
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: my-app-with-config
+
+  template:
+    metadata:
+      labels:
+        app: my-app-with-config
+
+    spec:
+      containers:
+        - name: my-app
+          image: nginx:alpine
+          ports:
+            - containerPort: 8080
+
+          # ── METHOD 1: envFrom ──────────────────────────────────────
+          # Load ALL key-value pairs from a ConfigMap or Secret
+          # as environment variables in one block
+          # Every key in the ConfigMap becomes an env var in the Pod
+          envFrom:
+            # Load all keys from app-config ConfigMap
+            # APP_NAME, APP_ENV, LOG_LEVEL etc all become env vars
+            - configMapRef:
+                name: app-config
+            # Load all keys from app-secret Secret
+            # DB_PASSWORD, REDIS_PASSWORD, API_KEY become env vars
+            - secretRef:
+                name: app-secret
+
+          # ── METHOD 2: env ──────────────────────────────────────────
+          # Load specific keys one by one
+          # Useful when you only need a few values
+          # or want to rename the key to a different env var name
+          env:
+            # Read DB_URL from ConfigMap and expose as SPRING_DATASOURCE_URL
+            # valueFrom.configMapKeyRef reads one specific key
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  # name of the ConfigMap to read from
+                  name: app-config
+                  # key inside the ConfigMap to read
+                  key: DB_URL
+
+            # Read DB_PASSWORD from Secret and expose as SPRING_DATASOURCE_PASSWORD
+            # valueFrom.secretKeyRef reads one specific key from a Secret
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  # name of the Secret to read from
+                  name: app-secret
+                  # key inside the Secret to read
+                  key: DB_PASSWORD
+
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
