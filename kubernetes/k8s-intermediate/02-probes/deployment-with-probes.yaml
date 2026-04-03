@@ -1,0 +1,152 @@
+# deployment-with-probes.yaml
+#
+# Demonstrates all three Kubernetes probes using nginx:alpine.
+# nginx is used here because it is simple, reliable and starts instantly.
+# This lets you focus on understanding probe BEHAVIOUR without
+# worrying about application setup.
+#
+# Spring Boot Actuator probes are covered in k8s-advanced when
+# the full Spring Boot app is deployed to Kubernetes.
+#
+# Apply:  kubectl apply -f deployment-with-probes.yaml -n backend-dockyard
+# Delete: kubectl delete -f deployment-with-probes.yaml -n backend-dockyard
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: probe-demo
+  namespace: backend-dockyard
+  labels:
+    app: probe-demo
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: probe-demo
+
+  # maxUnavailable: 0 means no Pod goes down until replacement is healthy
+  # Combined with readiness probe this ensures zero downtime rolling updates
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  template:
+    metadata:
+      labels:
+        app: probe-demo
+
+    spec:
+      containers:
+        - name: probe-demo
+
+          # nginx:alpine is small, starts in under a second
+          # and serves HTTP on port 80 immediately
+          # Perfect for learning probe behaviour
+          image: nginx:alpine
+
+          ports:
+            - containerPort: 80
+              name: http
+
+          # ── STARTUP PROBE ──────────────────────────────────────────
+          # Runs FIRST when the container starts.
+          # Blocks liveness and readiness from running until it passes.
+          #
+          # WHY THIS EXISTS:
+          # Some apps take a long time to start (Spring Boot: 30-60s).
+          # Without startupProbe the livenessProbe would fail during
+          # startup and Kubernetes would keep restarting the Pod.
+          #
+          # For nginx this passes almost instantly.
+          # For Spring Boot this gives the app time to load beans,
+          # connect to the database and start serving requests.
+          #
+          # Window = failureThreshold x periodSeconds
+          #        = 10 x 5 = 50 seconds maximum startup time
+          startupProbe:
+            httpGet:
+              # nginx serves its welcome page at /
+              # For Spring Boot this would be /actuator/health/liveness
+              path: /
+              port: 80
+            # Check every 5 seconds
+            periodSeconds: 5
+            # Mark as failed after 10 consecutive failures
+            # 10 x 5s = 50 second window for the app to start
+            failureThreshold: 10
+            # Wait 3 seconds before the very first check
+            # Gives the container a moment to start
+            initialDelaySeconds: 3
+
+          # ── LIVENESS PROBE ─────────────────────────────────────────
+          # Runs AFTER startupProbe passes.
+          # Checks if the app is alive and functioning.
+          #
+          # FAILURE ACTION: container is RESTARTED
+          #
+          # WHY RESTART?
+          # App is running but stuck in a deadlock, out of memory,
+          # or unrecoverable error state. Restarting clears the problem.
+          #
+          # For nginx: returns 200 as long as nginx process is healthy
+          # For Spring Boot this would be /actuator/health/liveness
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            # Check every 20 seconds
+            # Less frequent than readiness — restarts are disruptive
+            periodSeconds: 20
+            # Restart after 3 consecutive failures
+            # 3 x 20s = 60 seconds before restart triggers
+            failureThreshold: 3
+            # 1 success clears the failure count
+            successThreshold: 1
+            # Fail the probe if no response within 5 seconds
+            timeoutSeconds: 5
+
+          # ── READINESS PROBE ────────────────────────────────────────
+          # Runs AFTER startupProbe passes alongside livenessProbe.
+          # Checks if the app is ready to receive traffic.
+          #
+          # FAILURE ACTION: Pod REMOVED from load balancer
+          #                 Container is NOT restarted
+          #                 Pod stays running
+          #
+          # WHY NOT RESTART?
+          # App is alive but temporarily unable to serve requests.
+          # Restarting would not fix these issues.
+          # Removing from load balancer stops new traffic until resolved.
+          #
+          # For nginx: returns 200 as long as nginx can serve requests
+          # For Spring Boot this would be /actuator/health/readiness
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            # Check every 10 seconds — more frequent than liveness
+            # We want to restore traffic quickly when app recovers
+            periodSeconds: 10
+            # Remove from load balancer after 3 consecutive failures
+            failureThreshold: 3
+            # Require 2 consecutive successes before adding back
+            # Prevents flapping
+            successThreshold: 2
+            # Fail if no response within 5 seconds
+            timeoutSeconds: 5
+
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "64Mi"
+              cpu: "50m"
+
+      # How long Kubernetes waits after SIGTERM before force killing
+      terminationGracePeriodSeconds: 30
