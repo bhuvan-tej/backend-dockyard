@@ -1,0 +1,165 @@
+# deployment-service.yaml
+#
+# Creates two separate apps with their own Services.
+# The Ingress in ingress.yaml will route traffic to both
+# based on the URL path.
+#
+# This demonstrates how Ingress works as a single entry point
+# routing to multiple backend services.
+#
+# Apply:  kubectl apply -f deployment-service.yaml -n backend-dockyard
+# Delete: kubectl delete -f deployment-service.yaml -n backend-dockyard
+
+# ── APP 1 — Products App ──────────────────────────────────────────────
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  # First app simulates a products microservice
+  name: products-app
+  namespace: backend-dockyard
+  labels:
+    app: products-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: products-app
+
+  template:
+    metadata:
+      labels:
+        app: products-app
+
+    spec:
+      containers:
+        - name: products-app
+          # Using nginx with a custom HTML page to simulate the products service
+          image: nginx:alpine
+
+          ports:
+            - containerPort: 80
+
+          # lifecycle postStart runs a command immediately after the container starts
+          # Here we overwrite the default nginx page with a custom response
+          # so we can tell which service responded when testing
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "echo '<h1>Products Service</h1><p>Path: /products</p>' > /usr/share/nginx/html/index.html"
+
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "64Mi"
+              cpu: "50m"
+
+---
+
+# ── SERVICE FOR APP 1 ─────────────────────────────────────────────────
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  # ClusterIP Service — only reachable inside the cluster
+  # Ingress will route /products traffic here
+  name: products-service
+  namespace: backend-dockyard
+  labels:
+    app: products-app
+
+spec:
+  type: ClusterIP
+
+  selector:
+    # Routes traffic to all Pods with label app: products-app
+    app: products-app
+
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+
+---
+
+# ── APP 2 — Orders App ────────────────────────────────────────────────
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  # Second app simulates an orders microservice
+  name: orders-app
+  namespace: backend-dockyard
+  labels:
+    app: orders-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: orders-app
+
+  template:
+    metadata:
+      labels:
+        app: orders-app
+
+    spec:
+      containers:
+        - name: orders-app
+          image: nginx:alpine
+
+          ports:
+            - containerPort: 80
+
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "echo '<h1>Orders Service</h1><p>Path: /orders</p>' > /usr/share/nginx/html/index.html"
+
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "64Mi"
+              cpu: "50m"
+
+---
+
+# ── SERVICE FOR APP 2 ─────────────────────────────────────────────────
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  # Ingress will route /orders traffic here
+  name: orders-service
+  namespace: backend-dockyard
+  labels:
+    app: orders-app
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: orders-app
+
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http

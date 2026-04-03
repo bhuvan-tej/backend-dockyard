@@ -1,0 +1,82 @@
+# ingress.yaml
+#
+# An Ingress routes external HTTP traffic to internal Services
+# based on the URL path or hostname.
+#
+# WHY INGRESS EXISTS
+#
+# Without Ingress:
+#   Each Service needs its own NodePort with a different port number
+#   products-service → port 30001
+#   orders-service   → port 30002
+#   users-service    → port 30003
+#   Clients need to know which port goes to which service
+#   Managing dozens of NodePorts is a nightmare
+#
+# With Ingress:
+#   Single entry point on port 80
+#   Ingress controller routes based on path or hostname
+#   localhost/products → products-service
+#   localhost/orders   → orders-service
+#   Clean URLs, one port, one entry point
+#
+# Think of Ingress as Kubernetes-level Nginx reverse proxy.
+# In fact minikube's Ingress addon runs actual nginx behind the scenes.
+#
+# Apply:  kubectl apply -f ingress.yaml -n backend-dockyard
+# Delete: kubectl delete -f ingress.yaml -n backend-dockyard
+# View:   kubectl get ingress -n backend-dockyard
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: app-ingress
+  namespace: backend-dockyard
+  labels:
+    app: ingress-demo
+
+  # annotations customize the behavior of the Ingress controller
+  annotations:
+    # rewrite-target rewrites the URL before forwarding to the backend
+    # Without this: request to /products gets forwarded as /products to the Service
+    # The nginx container inside the Pod only serves content at /
+    # So /products would return 404
+    #
+    # With rewrite-target: /$1 the path captured in the regex is used
+    # /products → / (the part after /products is captured and used)
+    # /orders   → / (same)
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+    # host: omitted means match any hostname
+    # In production you would set host: api.yourdomain.com
+    - http:
+        paths:
+          # ── ROUTE 1: /products → products-service ──────────────────
+          - path: /products(/|$)(.*)
+            # pathType Prefix means match any path starting with /products
+            # Exact means the path must match exactly
+            # ImplementationSpecific lets the controller decide
+            pathType: ImplementationSpecific
+
+            backend:
+              service:
+                # Name of the Service to route to
+                name: products-service
+                port:
+                  # Port on the Service — matches spec.ports.port in the Service
+                  number: 80
+
+          # ── ROUTE 2: /orders → orders-service ──────────────────────
+          - path: /orders(/|$)(.*)
+            pathType: ImplementationSpecific
+
+            backend:
+              service:
+                name: orders-service
+                port:
+                  number: 80
