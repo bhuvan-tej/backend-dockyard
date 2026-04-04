@@ -1,0 +1,290 @@
+# .github/workflows/ci-cd.yml
+#
+# Full CI/CD pipeline for the Spring Boot application.
+#
+# PIPELINE STAGES:
+#   1. test     — run Maven tests with real PostgreSQL and Redis
+#   2. build    — build Docker image using multi-stage Dockerfile
+#   3. push     — push image to GitHub Container Registry (GHCR)
+#   4. deploy   — update Kubernetes Deployment with new image
+#   5. rollback — automatic rollback if deploy fails
+#
+# TRIGGERS:
+#   push to main branch          → full pipeline runs
+#   pull request to main         → test only (no build or deploy)
+#
+# SECRETS NEEDED IN GITHUB:
+#   Go to: repo → Settings → Secrets and variables → Actions → New secret
+#
+#   KUBECONFIG_B64
+#     Your kubeconfig file base64 encoded
+#     Generate on Windows PowerShell:
+#     [Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.kube\config"))
+#     Paste the output as the secret value
+#
+# GITHUB_TOKEN is provided automatically — no setup needed
+# It is used to push images to GHCR
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    # Only trigger when Spring Boot app files change
+    # Prevents pipeline running for README or K8s YAML changes
+    paths:
+      - "docker/spring-docker/**"
+      - ".github/workflows/ci-cd.yml"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "docker/spring-docker/**"
+
+# Environment variables available to all jobs
+env:
+  # GitHub Container Registry
+  REGISTRY: ghcr.io
+  # Image name — replace YOUR_USERNAME with your GitHub username
+  IMAGE_NAME: ghcr.io/bhuvan-tej/backend-dockyard/spring-docker-app
+  # Kubernetes namespace where the app is deployed
+  K8S_NAMESPACE: spring-app
+  # Kubernetes Deployment name to update
+  K8S_DEPLOYMENT: spring-app
+
+jobs:
+
+  # ══════════════════════════════════════════════════════════════════
+  # JOB 1 — TEST
+  # Runs Maven tests with real PostgreSQL and Redis service containers
+  # If tests fail the pipeline stops here — no image built or deployed
+  # ══════════════════════════════════════════════════════════════════
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+
+    # Service containers run alongside the test job
+    # They are available at localhost on the mapped ports
+    services:
+
+      # Real PostgreSQL for integration tests
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: appuser
+          POSTGRES_PASSWORD: apppass
+          POSTGRES_DB: appdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # Real Redis for cache tests
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          # Cache Maven dependencies between runs
+          # Speeds up subsequent pipeline runs significantly
+          cache: maven
+
+      - name: 🧪 Run tests
+        working-directory: docker/spring-docker/03-full-compose/spring-docker-app
+        run: mvn test --no-transfer-progress -B
+        env:
+          # Pass database and cache connection details to tests
+          # These match the service containers running above
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/appdb
+          SPRING_DATASOURCE_USERNAME: appuser
+          SPRING_DATASOURCE_PASSWORD: apppass
+          SPRING_DATA_REDIS_HOST: localhost
+          SPRING_DATA_REDIS_PORT: 6379
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: 📊 Upload test results
+        # always() means upload even if tests failed
+        # So you can see which tests failed in the GitHub UI
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: docker/spring-docker/03-full-compose/spring-docker-app/target/surefire-reports/
+
+  # ══════════════════════════════════════════════════════════════════
+  # JOB 2 — BUILD AND PUSH IMAGE
+  # Only runs on push to main (not on pull requests)
+  # Only runs if tests passed
+  # ══════════════════════════════════════════════════════════════════
+  build-and-push:
+    name: 🐳 Build and Push Image
+    runs-on: ubuntu-latest
+    # Wait for tests to pass before building
+    needs: test
+    # Skip on pull requests — only build on push to main
+    if: github.event_name == 'push'
+
+    # outputs lets the deploy job use the image tag we generate here
+    outputs:
+      image-tag: ${{ steps.meta.outputs.version }}
+
+    # Permission to push to GHCR using GITHUB_TOKEN
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Docker Buildx
+        # Buildx enables advanced build features including caching
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          # github.actor is the user who triggered the workflow
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN is automatically provided — no secret needed
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Generate image tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            # Tag with short git commit SHA — unique per commit
+            # Example: sha-a1b2c3d
+            # Used in the deploy job to deploy exactly this commit
+            type=sha,prefix=sha-
+            # Tag with branch name — example: main
+            type=ref,event=branch
+            # Tag as latest only on the default branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🏗️ Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: docker/spring-docker/03-full-compose/spring-docker-app
+          dockerfile: docker/spring-docker/03-full-compose/spring-docker-app/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Use GitHub Actions cache for Docker layers
+          # First run builds all layers, subsequent runs reuse unchanged ones
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 📋 Print image details
+        run: |
+          echo "Image pushed successfully"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Digest: ${{ steps.meta.outputs.digest }}"
+
+  # ══════════════════════════════════════════════════════════════════
+  # JOB 3 — DEPLOY TO KUBERNETES
+  # Updates the Deployment image and waits for rollout to complete
+  # Automatically rolls back if the deployment fails
+  # ══════════════════════════════════════════════════════════════════
+  deploy:
+    name: 🚀 Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.28.0"
+
+      - name: 🔑 Configure kubectl
+        run: |
+          # Decode the base64 kubeconfig stored in GitHub Secrets
+          # and write it to the default kubeconfig location
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+          # Verify kubectl can reach the cluster
+          kubectl cluster-info
+
+      - name: 🖼️ Update Deployment image
+        run: |
+          # Set the new image on the Deployment
+          # Uses the sha- tagged image from the build job
+          # sha-${{ github.sha }} is unique per commit
+          # This ensures exactly the code from this commit is deployed
+          kubectl set image deployment/${{ env.K8S_DEPLOYMENT }} \
+            spring-app=${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
+            --namespace=${{ env.K8S_NAMESPACE }}
+
+          echo "Deployment updated with image: ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
+
+      - name: ⏳ Wait for rollout to complete
+        run: |
+          # Wait up to 5 minutes for the rolling update to finish
+          # If any Pod fails to become ready this command fails
+          # which triggers the rollback step below
+          kubectl rollout status deployment/${{ env.K8S_DEPLOYMENT }} \
+            --namespace=${{ env.K8S_NAMESPACE }} \
+            --timeout=5m
+
+      - name: ✅ Verify Pods are healthy
+        run: |
+          # Confirm all Pods are in Ready state after the rollout
+          kubectl wait pod \
+            --selector=app=spring-app \
+            --for=condition=Ready \
+            --namespace=${{ env.K8S_NAMESPACE }} \
+            --timeout=300s
+
+          echo "Deployment successful"
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=spring-app
+
+      - name: 🔙 Rollback on failure
+        # if: failure() runs only when a previous step failed
+        # This means if rollout or health check failed → rollback
+        if: failure()
+        run: |
+          echo "Deployment failed — rolling back to previous version"
+
+          # Undo the last rollout — restores the previous image
+          kubectl rollout undo deployment/${{ env.K8S_DEPLOYMENT }} \
+            --namespace=${{ env.K8S_NAMESPACE }}
+
+          # Wait for rollback to complete
+          kubectl rollout status deployment/${{ env.K8S_DEPLOYMENT }} \
+            --namespace=${{ env.K8S_NAMESPACE }} \
+            --timeout=5m
+
+          echo "Rollback complete"
+
+          # Exit with error so the pipeline shows as failed
+          # even though rollback succeeded
+          exit 1
