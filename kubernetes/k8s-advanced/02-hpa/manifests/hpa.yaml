@@ -1,0 +1,86 @@
+# manifests/hpa.yaml
+#
+# Horizontal Pod Autoscaler (HPA) for the Spring Boot app.
+#
+# WHY HPA EXISTS
+#
+# Without HPA:
+#   Traffic spikes hit, CPU maxes out, app slows down
+#   You manually scale up — too late, users already affected
+#   Traffic drops at night, Pods sit idle, you pay for nothing
+#
+# With HPA:
+#   CPU crosses threshold → HPA adds Pods automatically
+#   Traffic drops → HPA removes Pods automatically
+#   No manual intervention at any time
+#
+# REQUIREMENT — CPU requests must be set on the Deployment
+#   HPA calculates percentage based on requests
+#   spring-app.yaml already has requests: cpu: "250m"
+#
+# REQUIREMENT — Metrics Server must be running
+#   minikube addons enable metrics-server
+#
+# Apply:  kubectl apply -f hpa.yaml -n spring-app
+# Watch:  kubectl get hpa -n spring-app -w
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+
+metadata:
+  name: spring-app-hpa
+  namespace: spring-app
+  labels:
+    app: spring-app
+
+spec:
+
+  # scaleTargetRef points to the Deployment to scale
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: spring-app
+
+  # Minimum replicas — never goes below this even at 0% CPU
+  minReplicas: 2
+
+  # Maximum replicas — never goes above this regardless of CPU
+  maxReplicas: 5
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          # CORRECT VALUE: Utilization (not AverageUtilization)
+          # Utilization = average CPU usage across all Pods
+          # as a percentage of their requested CPU
+          type: Utilization
+          # Scale up when average CPU exceeds 50% of the request
+          # Our request is 250m
+          # 50% of 250m = 125m
+          # Above 125m average → add Pods
+          # Below 125m average → remove Pods (respecting minReplicas)
+          averageUtilization: 50
+
+  # behavior controls scale speed
+  behavior:
+    scaleUp:
+      # Wait 30 seconds of sustained high CPU before scaling up
+      # Prevents scaling on brief spikes
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          # Add at most 2 Pods per scaling event
+          value: 2
+          periodSeconds: 30
+
+    scaleDown:
+      # Wait 2 minutes of sustained low CPU before scaling down
+      # Prevents removing Pods if traffic spikes again immediately
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          # Remove at most 1 Pod per scaling event
+          value: 1
+          periodSeconds: 60

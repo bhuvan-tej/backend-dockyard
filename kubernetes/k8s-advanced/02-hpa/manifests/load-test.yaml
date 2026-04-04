@@ -1,0 +1,54 @@
+# manifests/load-test.yaml
+#
+# A temporary Pod that generates load against the Spring Boot app.
+# Used to prove HPA scales up when CPU exceeds the threshold.
+#
+# This creates a busybox Pod that runs an infinite loop of curl requests
+# against the Spring Boot API — simulating real traffic load.
+#
+# Apply:   kubectl apply -f load-test.yaml -n spring-app
+# Watch:   kubectl get hpa -n spring-app -w
+# Delete:  kubectl delete -f load-test.yaml -n spring-app
+#          (HPA will then scale back down)
+
+apiVersion: v1
+kind: Pod
+
+metadata:
+  name: load-test
+  namespace: spring-app
+  labels:
+    app: load-test
+
+spec:
+  containers:
+    - name: load-test
+      # busybox is a tiny image with basic Unix tools including wget
+      image: busybox:latest
+
+      # Run an infinite loop hitting the Spring Boot API as fast as possible
+      # wget sends HTTP GET requests to the spring-app-service
+      # -q quiet mode — no output per request
+      # -O /dev/null discards the response body
+      # spring-app-service is the Kubernetes Service DNS name
+      # Port 8080 is the Service port
+      command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Starting load test against spring-app-service..."
+          while true; do
+            wget -q -O /dev/null http://spring-app-service:8080/api/products
+          done
+
+      resources:
+        requests:
+          memory: "32Mi"
+          cpu: "25m"
+        limits:
+          memory: "64Mi"
+          cpu: "50m"
+
+  # restartPolicy: Never means if this Pod crashes it stays dead
+  # We do not want the load tester to restart automatically
+  restartPolicy: Never
