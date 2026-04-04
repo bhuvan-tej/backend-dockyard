@@ -1,0 +1,27 @@
+# manifests/namespace.yaml
+#
+# Creates a dedicated namespace for the Spring Boot application.
+# All resources for this app live in this namespace.
+#
+# WHY A DEDICATED NAMESPACE?
+#
+# backend-dockyard namespace was used for learning exercises.
+# A real app gets its own namespace so:
+#   Resources are isolated from learning exercises
+#   RBAC permissions can be scoped to this namespace
+#   kubectl commands are cleaner with -n spring-app
+#   Easy to delete everything by deleting the namespace
+#
+# Apply:  kubectl apply -f namespace.yaml
+# Delete: kubectl delete -f namespace.yaml
+
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: spring-app
+  labels:
+    # Labels on namespaces are used for network policies
+    # and other cluster-level controls
+    app: spring-boot-k8s
+    environment: development

@@ -1,0 +1,144 @@
+# manifests/postgres.yaml
+#
+# PostgreSQL Deployment and Service for the Spring Boot app.
+# The Spring Boot app connects to "postgres-service" by DNS name.
+#
+# Apply:  kubectl apply -f postgres.yaml -n spring-app
+# Delete: kubectl delete -f postgres.yaml -n spring-app
+
+# ── PostgreSQL Deployment ─────────────────────────────────────────────
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: postgres
+  namespace: spring-app
+  labels:
+    app: postgres
+
+spec:
+  # Only 1 replica for PostgreSQL
+  # Running multiple replicas of a database needs special setup
+  # (primary/replica, shared storage) — beyond this scope
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: postgres
+
+  # Recreate strategy for databases
+  # Kills the old Pod before starting a new one
+  # Prevents two PostgreSQL instances writing to the same volume
+  # which would corrupt data
+  strategy:
+    type: Recreate
+
+  template:
+    metadata:
+      labels:
+        app: postgres
+
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+
+          ports:
+            - containerPort: 5432
+              name: postgres
+
+          # Read credentials from the Secret we created
+          # envFrom loads ALL keys from the Secret as environment variables
+          # POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB become env vars
+          envFrom:
+            - secretRef:
+                name: spring-app-secret
+
+          # Mount a PersistentVolumeClaim to store database files
+          # Without this all data is lost when the Pod restarts
+          volumeMounts:
+            - name: postgres-data
+              # This is where PostgreSQL stores its data files
+              mountPath: /var/lib/postgresql/data
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          # Readiness probe — only route traffic when postgres is ready
+          readinessProbe:
+            exec:
+              # pg_isready checks if PostgreSQL is accepting connections
+              # -U appuser uses our database username
+              command:
+                - pg_isready
+                - -U
+                - appuser
+            periodSeconds: 10
+            failureThreshold: 5
+            initialDelaySeconds: 10
+
+      volumes:
+        - name: postgres-data
+          # PersistentVolumeClaim stores data outside the Pod
+          # Data survives Pod restarts and replacements
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+---
+
+# ── PostgreSQL PersistentVolumeClaim ─────────────────────────────────
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: postgres-pvc
+  namespace: spring-app
+  labels:
+    app: postgres
+
+spec:
+  # ReadWriteOnce — only one node can mount this volume at a time
+  # Appropriate for a single PostgreSQL instance
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+    requests:
+      # Request 1GB of storage for the database
+      storage: 1Gi
+
+---
+
+# ── PostgreSQL Service ────────────────────────────────────────────────
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  # Spring Boot connects to "postgres-service" by this exact name
+  # Kubernetes DNS resolves "postgres-service" to the postgres Pod IP
+  name: postgres-service
+  namespace: spring-app
+  labels:
+    app: postgres
+
+spec:
+  # ClusterIP — only reachable inside the cluster
+  # PostgreSQL should never be exposed outside the cluster
+  type: ClusterIP
+
+  selector:
+    # Routes traffic to Pods with label app: postgres
+    app: postgres
+
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres

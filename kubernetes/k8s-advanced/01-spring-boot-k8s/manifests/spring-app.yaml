@@ -1,0 +1,192 @@
+# manifests/spring-app.yaml
+#
+# Spring Boot application Deployment, Service and Ingress.
+# This is where everything comes together:
+#   - Real Actuator probes
+#   - Config from ConfigMap and Secret
+#   - Connects to postgres-service and redis-service by DNS
+#   - Ingress routes external traffic to the app
+#
+# BEFORE APPLYING:
+# Replace YOUR_USERNAME with your actual GitHub username
+# in the image field below
+#
+# Apply:  kubectl apply -f spring-app.yaml -n spring-app
+# Delete: kubectl delete -f spring-app.yaml -n spring-app
+
+# ── Spring Boot Deployment ────────────────────────────────────────────
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: spring-app
+  namespace: spring-app
+  labels:
+    app: spring-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: spring-app
+
+  # Zero downtime rolling update
+  # maxUnavailable: 0 — no Pod removed until replacement is healthy
+  # maxSurge: 1 — one extra Pod created during update
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  template:
+    metadata:
+      labels:
+        app: spring-app
+
+    spec:
+      containers:
+        - name: spring-app
+
+          # Replace YOUR_USERNAME with your GitHub username
+          # This is the image we built and pushed in docker-intermediate/04-registry
+          # For this exercise we use the spring-docker-app image from spring-docker
+          # If you have not pushed it yet use this placeholder and update later:
+          image: ghcr.io/bhuvan-tej/backend-dockyard/spring-docker-app:latest
+
+          ports:
+            - containerPort: 8080
+              name: http
+
+          # Load all keys from ConfigMap as environment variables
+          # SPRING_PROFILES_ACTIVE, SPRING_DATASOURCE_URL,
+          # SPRING_DATA_REDIS_HOST etc all become env vars
+          envFrom:
+            - configMapRef:
+                name: spring-app-config
+
+          # Load sensitive values from Secret
+          env:
+            # Read SPRING_DATASOURCE_PASSWORD from the Secret
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: spring-app-secret
+                  key: SPRING_DATASOURCE_PASSWORD
+
+          # ── STARTUP PROBE ─────────────────────────────────────────
+          # Gives Spring Boot up to 3 minutes to start
+          # (30 checks x 6 seconds = 180 seconds)
+          # Blocks liveness and readiness until it passes
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 6
+            failureThreshold: 30
+            initialDelaySeconds: 10
+
+          # ── LIVENESS PROBE ────────────────────────────────────────
+          # Checks if the app is alive
+          # FAILURE → container restarted
+          # Uses /actuator/health/liveness — Spring Boot sets this
+          # to DOWN only when the app is in an unrecoverable state
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 30
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 5
+
+          # ── READINESS PROBE ───────────────────────────────────────
+          # Checks if the app is ready for traffic
+          # FAILURE → Pod removed from load balancer, NOT restarted
+          # Uses /actuator/health/readiness — Spring Boot sets this
+          # to DOWN when database or redis is unavailable
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 2
+            timeoutSeconds: 5
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+      # Grace period for in-flight requests to complete on shutdown
+      terminationGracePeriodSeconds: 60
+
+---
+
+# ── Spring Boot Service ───────────────────────────────────────────────
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: spring-app-service
+  namespace: spring-app
+  labels:
+    app: spring-app
+
+spec:
+  # ClusterIP — Ingress routes to this Service internally
+  # App is never exposed directly outside the cluster
+  type: ClusterIP
+
+  selector:
+    app: spring-app
+
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+
+---
+
+# ── Ingress ───────────────────────────────────────────────────────────
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: spring-app-ingress
+  namespace: spring-app
+  labels:
+    app: spring-app
+
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+
+spec:
+  rules:
+    - http:
+        paths:
+          # Route all /api requests to the Spring Boot app
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: spring-app-service
+                port:
+                  number: 8080
+
+          # Route Actuator health endpoints for external monitoring
+          - path: /actuator
+            pathType: Prefix
+            backend:
+              service:
+                name: spring-app-service
+                port:
+                  number: 8080

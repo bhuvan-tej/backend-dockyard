@@ -1,0 +1,42 @@
+# manifests/configmap.yaml
+#
+# Non-sensitive configuration for the Spring Boot application.
+# Passwords and secrets go in secret.yaml — never here.
+#
+# Apply:  kubectl apply -f configmap.yaml -n spring-app
+# View:   kubectl describe configmap spring-app-config -n spring-app
+
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: spring-app-config
+  namespace: spring-app
+  labels:
+    app: spring-boot-k8s
+
+data:
+  # Spring Boot profile to activate
+  # This loads application-docker.yml which uses service names
+  # as hostnames instead of localhost
+  SPRING_PROFILES_ACTIVE: "docker"
+
+  # Database connection URL
+  # "postgres-service" is the Kubernetes Service name for PostgreSQL
+  # Kubernetes DNS resolves this to the postgres Pod IP automatically
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/appdb"
+  SPRING_DATASOURCE_USERNAME: "appuser"
+
+  # Redis connection
+  # "redis-service" is the Kubernetes Service name for Redis
+  SPRING_DATA_REDIS_HOST: "redis-service"
+  SPRING_DATA_REDIS_PORT: "6379"
+
+  # JVM flags for running inside a container
+  # UseContainerSupport: JVM reads container memory limits not host RAM
+  # MaxRAMPercentage: use 75% of container memory for heap
+  JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+  # Application settings
+  SERVER_PORT: "8080"
+  LOG_LEVEL: "INFO"
