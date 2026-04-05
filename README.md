@@ -77,12 +77,12 @@ Learning Docker the right way — not just what commands to run but why each one
 ---
 *Each project is a standalone runnable app with its own Dockerfile and Docker Compose file.*
 
-| Project                 | Stack                          | Status    |
-|-------------------------|--------------------------------|-----------|
-| REST API with full CRUD | Spring Boot + JPA + PostgreSQL | ⬜ Pending |
-| JWT authentication      | Spring Security + JWT          | ⬜ Pending |
-| Event driven messaging  | Kafka + Spring Boot            | ⬜ Pending |
-| Microservices           | Two services + API Gateway     | ⬜ Pending |
+| Project                 | Stack                          | Status         |
+|-------------------------|--------------------------------|----------------|
+| REST API with full CRUD | Spring Boot + JPA + PostgreSQL | 🔄 In Progress |
+| JWT authentication      | Spring Security + JWT          | ⬜ Pending      |
+| Event driven messaging  | Kafka + Spring Boot            | ⬜ Pending      |
+| Microservices           | Two services + API Gateway     | ⬜ Pending      |
 
 ## 🧩 Design Patterns
  
