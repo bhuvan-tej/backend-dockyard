@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: rest-api-crud
+
+  datasource:
+    # Running locally with Docker PostgreSQL
+    # Start with: docker run -d --name pg -e POSTGRES_USER=appuser
+    #   -e POSTGRES_PASSWORD=apppass -e POSTGRES_DB=restdb -p 5432:5432 postgres:15-alpine
+    url: jdbc:postgresql://localhost:5432/restdb
+    username: appuser
+    password: apppass
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  jpa:
+    hibernate:
+      # update — creates tables if missing, updates schema on change
+      # Never use create-drop in production — wipes data on restart
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Jackson — how Java objects are serialised to JSON
+  jackson:
+    # Write dates as ISO strings not timestamps
+    serialization:
+      write-dates-as-timestamps: false
+    # Ignore unknown fields in incoming JSON — more flexible API
+    deserialization:
+      fail-on-unknown-properties: false
+
+server:
+  port: 8080
+  # Graceful shutdown — finish in-flight requests before stopping
+  shutdown: graceful
+  servlet:
+    # All endpoints are under /api
+    context-path: /api
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# SpringDoc OpenAPI — Swagger UI configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    # Show request duration in Swagger UI
+    display-request-duration: true
+
+# Application info shown at /actuator/info
+info:
+  app:
+    name: rest-api-crud
+    description: REST API with validation and pagination
+    version: 1.0.0
