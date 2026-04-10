@@ -108,17 +108,6 @@ Learning Docker the right way — not just what commands to run but why each one
 | Dynamic Programming — memoization, tabulation, classic problems | ⬜ Pending |
 | Sorting and Searching — QuickSort, MergeSort, binary search     | ⬜ Pending |
 
-## 🏗️ System Design
-
----
-*Written like real design documents. Working code where it matters.*
-
-| Design             | Covers                                    | Status    |
-|--------------------|-------------------------------------------|-----------|
-| URL Shortener      | Hashing, redirect, scaling                | ⬜ Pending |
-| Rate Limiter       | Token bucket, Redis backed, Spring filter | ⬜ Pending |
-| Caching Strategies | Cache aside, write through, eviction      | ⬜ Pending |
-
 ## 🛠️ Tools
 
 ---
