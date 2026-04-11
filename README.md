@@ -95,19 +95,6 @@ Learning Docker the right way — not just what commands to run but why each one
 | Structural | Adapter, Decorator, Facade, Proxy                            | ⬜ Pending |
 | Behavioral | Strategy, Observer, Chain of Responsibility, Template Method | ⬜ Pending |
 
-## 🧠 DSA
-
----
-*Interview focused. Every solution has time and space complexity analysis and a plain English explanation.*
-
-| Topic                                                           | Status    |
-|-----------------------------------------------------------------|-----------|
-| Arrays and Strings — two pointers, sliding window, prefix sums  | ⬜ Pending |
-| Linked Lists — reversal, cycle detection, merge                 | ⬜ Pending |
-| Trees and Graphs — BFS, DFS, binary search tree                 | ⬜ Pending |
-| Dynamic Programming — memoization, tabulation, classic problems | ⬜ Pending |
-| Sorting and Searching — QuickSort, MergeSort, binary search     | ⬜ Pending |
-
 ## 🛠️ Tools
 
 ---
