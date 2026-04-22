@@ -79,21 +79,10 @@ Learning Docker the right way — not just what commands to run but why each one
 
 | Project                 | Stack                          | Status         |
 |-------------------------|--------------------------------|----------------|
-| REST API with full CRUD | Spring Boot + JPA + PostgreSQL | 🔄 In Progress |
-| JWT authentication      | Spring Security + JWT          | ⬜ Pending      |
+| REST API with full CRUD | Spring Boot + JPA + PostgreSQL | ✅ Done         |
+| JWT authentication      | Spring Security + JWT          | 🔄 In Progress |
 | Event driven messaging  | Kafka + Spring Boot            | ⬜ Pending      |
 | Microservices           | Two services + API Gateway     | ⬜ Pending      |
-
-## 🧩 Design Patterns
- 
----
-*GoF patterns implemented in Java with real Spring Boot context, not toy examples.*
-
-| Category   | Patterns                                                     | Status    |
-|------------|--------------------------------------------------------------|-----------|
-| Creational | Singleton, Factory, Builder, Prototype                       | ⬜ Pending |
-| Structural | Adapter, Decorator, Facade, Proxy                            | ⬜ Pending |
-| Behavioral | Strategy, Observer, Chain of Responsibility, Template Method | ⬜ Pending |
 
 ## 🛠️ Tools
 
