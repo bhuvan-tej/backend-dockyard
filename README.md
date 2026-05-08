@@ -89,13 +89,12 @@ Learning Docker the right way — not just what commands to run but why each one
 ---
 | Tool                     | Purpose                     |
 |--------------------------|-----------------------------|
-| Java 17                  | Language                    |
+| Java 17+                 | Language                    |
 | Spring Boot 3            | Application framework       |
 | Maven                    | Build tool                  |
 | Docker Desktop with WSL2 | Containerisation on Windows |
 | minikube and kubectl     | Local Kubernetes cluster    |
 | IntelliJ IDEA            | IDE                         |
-| GitHub Actions           | CI/CD pipeline              |
 
 ---
 *If this helped you, drop a ⭐ — it keeps the motivation going.*
