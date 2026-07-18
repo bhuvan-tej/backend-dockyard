@@ -41,8 +41,8 @@ backend-dockyard/
 ---
 Learning Docker the right way — not just what commands to run but why each one exists, what goes wrong and how to debug it.
 
-| Topic                                                     | Folder                                       | Status |
-|-----------------------------------------------------------|----------------------------------------------|--------|
+| Topic                                                     | Folder                                       | Status  |
+|-----------------------------------------------------------|----------------------------------------------|---------|
 | What is Docker, images, containers, WSL2 on Windows       | `docker/docker-basics/01-what-is-docker`     | ✅ Done |
 | Dockerfile — FROM WORKDIR COPY RUN ENV CMD, layer caching | `docker/docker-basics/02-dockerfile`         | ✅ Done |
 | Volumes and networking — persistence and container DNS    | `docker/docker-basics/03-volumes-networks`   | ✅ Done |
@@ -61,8 +61,8 @@ Learning Docker the right way — not just what commands to run but why each one
 ---
 *Starting after Docker is complete.*
 
-| Topic                                             | Folder                                          | Status |
-|---------------------------------------------------|-------------------------------------------------|--------|
+| Topic                                             | Folder                                          | Status  |
+|---------------------------------------------------|-------------------------------------------------|---------|
 | K8s concepts — control plane, nodes, core objects | `kubernetes/k8s-basics/01-concepts`             | ✅ Done |
 | Pods and Deployments — self healing and scaling   | `kubernetes/k8s-basics/02-deployments`          | ✅ Done |
 | Services — ClusterIP, NodePort, LoadBalancer      | `kubernetes/k8s-basics/03-services`             | ✅ Done |
@@ -77,12 +77,12 @@ Learning Docker the right way — not just what commands to run but why each one
 ---
 *Each project is a standalone runnable app with its own Dockerfile and Docker Compose file.*
 
-| Project                 | Stack                          | Status    |
-|-------------------------|--------------------------------|-----------|
-| REST API with full CRUD | Spring Boot + JPA + PostgreSQL | ✅ Done    |
-| JWT authentication      | Spring Security + JWT          | ⬜ Pending |
-| Event driven messaging  | Kafka + Spring Boot            | ⬜ Pending |
-| Microservices           | Two services + API Gateway     | ⬜ Pending |
+| Project                                                                                    | Stack                          | Status     |
+|--------------------------------------------------------------------------------------------|--------------------------------|------------|
+| REST API with full CRUD                                                                    | Spring Boot + JPA + PostgreSQL | ✅ Done    |
+| QR generator & decoder([API guide](spring-boot/02-qr-generator/qr-generator/API_GUIDE.md)) | Spring Boot + ZXing + H2       | ✅ Done    |
+| JWT authentication                                                                         | Spring Security + JWT          | ⬜ Pending |
+| Microservices                                                                              | Two services + API Gateway     | ⬜ Pending |
 
 ## 🛠️ Tools
 
