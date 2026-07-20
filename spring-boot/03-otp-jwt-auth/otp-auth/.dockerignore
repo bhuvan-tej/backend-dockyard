@@ -1,0 +1,14 @@
+# Exclude everything not needed inside the Docker build context.
+# A smaller context means faster builds and no accidental secret leaks.
+target/
+.idea/
+*.iml
+.vscode/
+.git/
+.gitignore
+.DS_Store
+*.log
+README.md
+API_GUIDE.md
+docs/
+

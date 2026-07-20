@@ -1,0 +1,80 @@
+spring:
+  application:
+    name: otp-auth
+
+  # H2 in-memory database — zero setup. The app runs anywhere with just Java.
+  # OTP challenges live only for the lifetime of the process, which is perfect
+  # for a demo. Swap the datasource block for PostgreSQL to persist.
+  datasource:
+    url: jdbc:h2:mem:otpdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  h2:
+    console:
+      enabled: true          # browse the data at /api/h2-console
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update       # create/update the schema from the entities
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+server:
+  port: 8080
+  shutdown: graceful
+  servlet:
+    context-path: /api        # every endpoint lives under /api
+
+# --- OTP rules (all tunable, bound to OtpProperties) ---
+otp:
+  length: 6                   # digits in the code
+  ttl-seconds: 300            # validity window: 5 minutes
+  max-attempts: 5             # wrong guesses before lockout
+  resend-cooldown-seconds: 30 # min gap between OTP requests
+  # DEV ONLY: return the code in the response so the API is testable with no
+  # SMS/email gateway. Override to false via OTP_EXPOSE_CODE in production.
+  expose-code: true
+
+# --- JWT signing + lifetimes (bound to JwtProperties) ---
+jwt:
+  # HS256 secret — MUST be >= 32 bytes. Override via JWT_SECRET in production.
+  secret: ${JWT_SECRET:change-me-please-use-a-long-random-32byte-minimum-secret-value}
+  issuer: dockyard-otp-auth
+  access-token-ttl-seconds: 900       # 15 minutes
+  refresh-token-ttl-seconds: 604800   # 7 days
+
+# Actuator — health, info and metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# SpringDoc OpenAPI — Swagger UI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+
+info:
+  app:
+    name: otp-auth
+    description: OTP-based authentication issuing JWT access and refresh tokens with strict validity and expiry
+    version: 1.0.0
+
