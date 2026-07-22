@@ -18,11 +18,12 @@
   <img src="assets/tech/java.svg" width="44" height="44" alt="Java 17 / 21" title="Java 17 / 21"/>&nbsp;&nbsp;
   <img src="assets/tech/spring.svg" width="44" height="44" alt="Spring Boot 3" title="Spring Boot 3"/>&nbsp;&nbsp;
   <img src="assets/tech/springsecurity.svg" width="44" height="44" alt="Spring Security" title="Spring Security"/>&nbsp;&nbsp;
+  <img src="assets/tech/springai.svg" width="44" height="44" alt="Spring AI" title="Spring AI"/>&nbsp;&nbsp;
   <img src="assets/tech/hibernate.svg" width="44" height="44" alt="Hibernate / JPA" title="Hibernate / JPA"/>&nbsp;&nbsp;
   <img src="assets/tech/maven.svg" width="44" height="44" alt="Maven" title="Maven"/>
 </p>
 
-`Java 17/21` · `Spring Boot 3` · `Spring Security` · `Hibernate / JPA` · `Maven`
+`Java 17/21` · `Spring Boot 3` · `Spring Security` · `Spring AI` · `Hibernate / JPA` · `Maven`
 
 **Databases & Caching**
 
@@ -48,11 +49,12 @@
 <p>
   <img src="assets/tech/jwt.svg" width="44" height="44" alt="JWT (JJWT)" title="JWT (JJWT)"/>&nbsp;&nbsp;
   <img src="assets/tech/swagger.svg" width="44" height="44" alt="OpenAPI / Swagger" title="OpenAPI / Swagger"/>&nbsp;&nbsp;
+  <img src="assets/tech/ollama.svg" width="44" height="44" alt="Ollama" title="Ollama (local LLM)"/>&nbsp;&nbsp;
   <img src="assets/tech/githubactions.svg" width="44" height="44" alt="GitHub Actions" title="GitHub Actions"/>&nbsp;&nbsp;
   <img src="assets/tech/intellij.svg" width="44" height="44" alt="IntelliJ IDEA" title="IntelliJ IDEA"/>
 </p>
 
-`JWT (JJWT)` · `OpenAPI / Swagger` · `ZXing (QR)` · `Lombok` · `GitHub Actions` · `IntelliJ IDEA`
+`JWT (JJWT)` · `OpenAPI / Swagger` · `Ollama` · `Vector Store (RAG)` · `ZXing (QR)` · `Lombok` · `GitHub Actions` · `IntelliJ IDEA`
 
 ---
 A place where backend systems are built, containerized, orchestrated and shipped.
@@ -129,7 +131,7 @@ Learning Docker the right way — not just what commands to run but why each one
 | REST API with full CRUD                                                                    | Spring Boot + JPA + PostgreSQL    | ✅ Done    |
 | QR generator & decoder([API guide](spring-boot/02-qr-generator/qr-generator/API_GUIDE.md)) | Spring Boot + ZXing + H2          | ✅ Done    |
 | OTP + JWT authentication([API guide](spring-boot/03-otp-jwt-auth/otp-auth/API_GUIDE.md))   | Spring Security + JWT (JJWT) + H2 | ✅ Done    |
-| Microservices                                                                              | Two services + API Gateway        | ⬜ Pending |
+| Spring AI basics — the 5 core LLM patterns                                                 | Spring AI + Ollama                | ⬜ Pending |
 
 ## 🛠️ Tools
 
