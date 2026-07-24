@@ -10,7 +10,10 @@
 
 # ── Stage 1 — compile ────────────────────────────────────────────────
 
-FROM eclipse-temurin:17-jdk-alpine AS builder
+# NOTE: the Temurin Alpine tags are amd64-only (no arm64). The --platform pin
+# lets `docker compose up` build this on Apple Silicon (emulated) and on
+# Intel/Windows (native) with no extra flags.
+FROM --platform=linux/amd64 eclipse-temurin:17-jdk-alpine AS builder
 
 WORKDIR /build
 
@@ -28,7 +31,7 @@ RUN javac -cp postgresql-42.7.1.jar Main.java
 
 # ── Stage 2 — runtime ────────────────────────────────────────────────
 
-FROM eclipse-temurin:17-jre-alpine
+FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
@@ -39,7 +42,7 @@ COPY --from=builder /build/Main.class .
 COPY --from=builder /build/postgresql-42.7.1.jar .
 
 # The app listens on port 8080
-# Docker Compose maps this to port 8080 on your Windows machine
+# Docker Compose maps this to port 8080 on your host machine
 EXPOSE 8080
 
 # Run the app with the PostgreSQL driver on the classpath

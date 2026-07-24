@@ -20,7 +20,9 @@
 # ─────────────────────────────────────────────────────────────────────
 
 # AS builder gives this stage a name so we can reference it later
-FROM eclipse-temurin:17-jdk-alpine AS builder
+# NOTE: the Temurin Alpine tags are amd64-only (no arm64). The --platform pin
+# lets this build run on Apple Silicon (emulated) and Intel/Windows (native) alike.
+FROM --platform=linux/amd64 eclipse-temurin:17-jdk-alpine AS builder
 
 # Set working directory for the build stage
 WORKDIR /build
@@ -42,7 +44,7 @@ RUN javac HelloMultiStage.java
 # ─────────────────────────────────────────────────────────────────────
 
 # Fresh start from a smaller base image — only the JRE, no compiler
-FROM eclipse-temurin:17-jre-alpine AS runtime
+FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine AS runtime
 
 # Set working directory for the runtime stage
 WORKDIR /app

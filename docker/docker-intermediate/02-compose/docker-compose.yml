@@ -10,9 +10,9 @@
 # View logs:             docker compose logs -f
 # View logs one service: docker compose logs -f app
 
-# The version of the Compose file format
-# Version 3.8 supports all modern features including health checks
-version: "3.8"
+# NOTE: the old top-level "version:" key was removed on purpose.
+# Compose v2 (invoked as `docker compose`) ignores it and warns if present.
+# The Compose file format is now versionless.
 
 services:
   # ────────────────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ services:
       # The name of the database to create on first start
       POSTGRES_DB: appdb
 
-    # Map container port 5432 to your Windows port 5432
+    # Map container port 5432 to your host port 5432
     # Format is "host-port:container-port"
     # This lets you connect to the database from IntelliJ or DBeaver
     # using localhost:5432 with the credentials above
@@ -85,7 +85,7 @@ services:
     # Give the container a readable name
     container_name: compose-app
 
-    # Map container port 8080 to your Windows port 8080
+    # Map container port 8080 to your host port 8080
     # Open http://localhost:8080 in your browser to see the app
     ports:
       - "8080:8080"
@@ -126,7 +126,7 @@ services:
 # ────────────────────────────────────────────────────────────────────
 volumes:
   # This volume stores the PostgreSQL database files
-  # Lives inside WSL2 on Windows, managed by Docker
+  # Managed by Docker on the host (inside the Docker VM on macOS/Windows)
   postgres_data:
 
 # ────────────────────────────────────────────────────────────────────

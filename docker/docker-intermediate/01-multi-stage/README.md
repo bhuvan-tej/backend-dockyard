@@ -61,13 +61,27 @@ Final image = JRE + your JAR only = ~180 MB.
 └── README.md                 you are here
 ```
 
+> ### ℹ️ Apple Silicon (M1/M2/M3) — already handled for you
+> The `eclipse-temurin:*-alpine` images are published **only for `amd64` (Intel)**
+> — they have **no `arm64` build**. On an Apple Silicon Mac a plain build would
+> fail with `no match for platform in manifest: not found`. To spare you that,
+> **every Dockerfile in this repo pins `--platform=linux/amd64` on its `FROM`
+> line**, so `docker build` and `docker compose up` just work with no extra
+> flags. Docker emulates the Intel image (a little slower) and the small-Alpine
+> size lesson stays intact. On Intel/Windows the pin is a harmless no-op.
+
 ## Step 1 — Build Both Images and Compare Size
  
 ---
-```powershell
+```bash
 # Make sure you are in the right folder
-cd docker\docker-intermediate\01-multi-stage
+# 🍎 macOS / Linux
+cd docker/docker-intermediate/01-multi-stage
+# 🪟 Windows (PowerShell):  cd docker\docker-intermediate\01-multi-stage
  
+# Everything below is identical on both platforms — Docker commands never change
+# (The Dockerfiles already pin linux/amd64, so no --platform flag is needed here.)
+
 # Build the single stage image
 # -f tells Docker which Dockerfile to use since we have two
 # -t app:single tags it with the name app and version single
@@ -85,7 +99,7 @@ docker images app
 ## Step 2 — Run Both and Compare Output
 
 ---
-```powershell
+```bash
 # Run the single stage image
 # --rm removes the container automatically when it exits
 # APP_NAME is set to Single Stage App in Dockerfile.single
@@ -101,7 +115,7 @@ docker run --rm app:multi
 ## Step 3 — Prove the Source Code Is Not in the Multi Stage Image
  
 ---
-```powershell
+```bash
 # Open a shell inside the single stage image
 # -it means interactive terminal so the shell stays open
 # --rm removes the container when you exit
@@ -130,7 +144,7 @@ exit
 ## Step 4 — Prove the Compiler Is Not in the Multi Stage Image
  
 ---
-```powershell
+```bash
 # Try to run javac inside the multi stage image
 # javac is the Java compiler — part of JDK but not JRE
 docker run --rm app:multi javac -version
@@ -147,7 +161,7 @@ docker run --rm app:single javac -version
 ## Step 5 — Clean Up
  
 ---
-```powershell
+```bash
 # Remove both images from your machine
 docker rmi app:single
 docker rmi app:multi
@@ -190,7 +204,7 @@ CMD ["java", "-jar", "app.jar"]
 
 You will build exactly this in the Spring Docker section.
 
-## 📝 Interview Questions This Day Covers
+## 📝 Interview Questions This Module Covers
  
 ---
 **Q: What is a multi-stage Docker build?**

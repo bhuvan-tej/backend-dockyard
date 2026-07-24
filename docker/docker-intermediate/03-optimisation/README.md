@@ -39,46 +39,140 @@ Your project folder:                 Docker only sees:
 The `.dockerignore` file is already in this folder.
 Open it and read every comment — each exclusion has a reason.
 
-### See the difference yourself
+## See the Difference Yourself
+
+### 1. Navigate to the optimisation folder
+
+**macOS / Linux**
+```bash
+cd docker/docker-intermediate/03-optimisation
+```
+
+**Windows (PowerShell)**
+```powershell
+cd docker\docker-intermediate\03-optimisation
+```
 
 ---
+
+### 2. Create a dummy 100 MB file
+
+This simulates what Maven places in the `target/` directory after a build.
+
+**macOS**
+```bash
+mkfile 100m big-file.bin
+```
+
+**Linux**
+```bash
+fallocate -l 100M big-file.bin
+
+# or
+
+dd if=/dev/zero of=big-file.bin bs=1M count=100
+```
+
+**Windows**
 ```powershell
-# Navigate to the optimisation folder
-cd docker\docker-intermediate\03-optimisation
- 
-# Create a dummy large file to simulate a target folder
-# fsutil creates a file of exactly 100MB filled with zeros
-# This simulates what Maven puts in target/ after a build
 fsutil file createnew big-file.bin 104857600
- 
-# Check the file was created and is 100MB
-# dir shows files with their sizes in bytes
+```
+
+---
+
+### 3. Verify the file size
+
+**macOS / Linux**
+```bash
+ls -lh big-file.bin
+```
+
+**Windows**
+```powershell
 dir big-file.bin
- 
-# Build an image WITHOUT .dockerignore
-# First temporarily rename .dockerignore so Docker ignores it
+```
+
+You should see a file that's approximately **100 MB**.
+
+---
+
+### 4. Build the image **without** `.dockerignore`
+
+Temporarily rename the `.dockerignore` file.
+
+**macOS / Linux**
+```bash
+mv .dockerignore .dockerignore.bak
+```
+
+**Windows**
+```powershell
 Rename-Item .dockerignore .dockerignore.bak
- 
-# Build and watch how long it takes to send the build context
-# The first line Docker prints shows how many bytes were sent
-# Notice it includes the 100MB big-file.bin
+```
+
+Now build the image:
+
+```bash
 docker build -t opt-test:no-ignore .
- 
-# Now restore .dockerignore
+```
+
+> **Observe:** The first lines of the output show **Transferring context**. The build context includes the **100 MB** `big-file.bin`, making it much larger.
+
+---
+
+### 5. Restore `.dockerignore`
+
+**macOS / Linux**
+```bash
+mv .dockerignore.bak .dockerignore
+```
+
+**Windows**
+```powershell
 Rename-Item .dockerignore.bak .dockerignore
- 
-# Add big-file.bin to .dockerignore temporarily to demonstrate
-# Open .dockerignore and add this line: big-file.bin
- 
-# Build again with .dockerignore active
-# The build context is much smaller because big-file.bin is excluded
+```
+
+---
+
+### 6. Build again **with** `.dockerignore`
+
+```bash
 docker build -t opt-test:with-ignore .
- 
-# Clean up
+```
+
+> **Observe:** The build context is much smaller because `big-file.bin` is excluded by the `.dockerignore` rules (such as `*.bin`).
+
+---
+
+### 7. Clean up
+
+**macOS / Linux**
+```bash
+rm big-file.bin
+```
+
+**Windows**
+```powershell
 Remove-Item big-file.bin
+```
+
+Remove the test images:
+
+```bash
 docker rmi opt-test:no-ignore
 docker rmi opt-test:with-ignore
 ```
+
+---
+
+## Expected Result
+
+| Without `.dockerignore`                          | With `.dockerignore`                  |
+|--------------------------------------------------|---------------------------------------|
+| Build context includes `big-file.bin` (~100 MB). | `big-file.bin` is excluded.           |
+| More data is sent to the Docker daemon.          | Much smaller build context.           |
+| Slower builds, especially on large projects.     | Faster builds and better performance. |
+
 
 ## Technique 2 — Layer Caching Order
 
@@ -118,10 +212,12 @@ GOOD ORDER — dependencies cached separately from code:
 
 ### See caching in action
 
-```powershell
+```bash
 # Use the Dockerfile from 02-dockerfile as an example
 # Build it twice and watch the second build use cache
-cd docker\docker-basics\02-dockerfile
+# 🍎 macOS / Linux
+cd docker/docker-basics/02-dockerfile
+# 🪟 Windows (PowerShell):  cd docker\docker-basics\02-dockerfile
  
 # First build — all steps run from scratch
 docker build -t cache-test:v1 .
@@ -138,7 +234,9 @@ docker build -t cache-test:v1 .
  
 # Clean up
 docker rmi cache-test:v1
-cd docker\docker-intermediate\03-optimisation
+# 🍎 macOS / Linux
+cd docker/docker-intermediate/03-optimisation
+# 🪟 Windows (PowerShell):  cd docker\docker-intermediate\03-optimisation
 ```
 
 ## Technique 3 — Choosing Smaller Base Images
@@ -147,18 +245,23 @@ cd docker\docker-intermediate\03-optimisation
 The base image you choose in FROM has the biggest impact on image size.
 Always use the smallest image that has what you need.
 
-```powershell
+```bash
 # Pull three different Java base images and compare their sizes
 # This download takes a few minutes depending on your connection
+#
+# NOTE: the Alpine tags are amd64-only, and pulling all three as linux/amd64
+# also keeps the size comparison apples-to-apples. On Intel/Windows the
+# --platform flag is a harmless no-op; on Apple Silicon it avoids the
+# "no match for platform in manifest" error.
  
 # Full Ubuntu based JDK — includes everything, very large
-docker pull eclipse-temurin:17-jdk
+docker pull --platform=linux/amd64 eclipse-temurin:17-jdk
  
 # Alpine based JDK — same Java, tiny Linux base
-docker pull eclipse-temurin:17-jdk-alpine
+docker pull --platform=linux/amd64 eclipse-temurin:17-jdk-alpine
  
 # Alpine based JRE — runtime only, no compiler
-docker pull eclipse-temurin:17-jre-alpine
+docker pull --platform=linux/amd64 eclipse-temurin:17-jre-alpine
  
 # Compare the sizes of all three
 # Look at the SIZE column — the difference is significant

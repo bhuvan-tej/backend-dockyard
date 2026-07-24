@@ -4,7 +4,7 @@
  * The focus is on comparing the two Dockerfiles, not this code.
  *
  * When this runs inside the multi-stage container notice:
- *  - os.name prints Linux even though you are on Windows
+ *  - os.name prints Linux even though you are on macOS or Windows
  *  - The image contains only this .class file, not the .java source
  *  - The JDK compiler is not present in the final image
  */

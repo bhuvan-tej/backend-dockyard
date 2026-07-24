@@ -1,9 +1,11 @@
 ## 📋 Quick Reference
 
 ---
-```powershell
+```bash
 # Log in to GHCR
-echo $token | docker login ghcr.io --username $username --password-stdin
+# 🍎 macOS / Linux:   echo "$TOKEN" | docker login ghcr.io --username "$USERNAME" --password-stdin
+# 🪟 Windows:         echo $token   | docker login ghcr.io --username $username   --password-stdin
+echo "$TOKEN" | docker login ghcr.io --username "$USERNAME" --password-stdin
  
 # Build with full registry tag
 docker build -t ghcr.io/USERNAME/REPO/IMAGE:TAG .

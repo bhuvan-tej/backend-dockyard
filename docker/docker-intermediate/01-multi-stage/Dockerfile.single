@@ -9,7 +9,9 @@
 # Start from the full JDK image
 # This image includes the compiler, debugger, all build tools
 # It is around 400MB just for the base image
-FROM eclipse-temurin:17-jdk-alpine
+# NOTE: the Temurin Alpine tags are amd64-only (no arm64). The --platform pin
+# lets this build run on Apple Silicon (emulated) and Intel/Windows (native) alike.
+FROM --platform=linux/amd64 eclipse-temurin:17-jdk-alpine
 
 # Set working directory inside the container
 WORKDIR /app

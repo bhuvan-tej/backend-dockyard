@@ -120,6 +120,14 @@ browser/editor) differs.
 > **Container paths never change** — inside the container it's always Linux:
 > `/app/data` ✅   (never `C:\...` or `~/...`).
 
+> ### 🍏 Apple Silicon (M1/M2/M3) is handled for you
+> The `eclipse-temurin:*-alpine` base images are **amd64-only** (no `arm64`
+> build), so a plain build on Apple Silicon fails with
+> `no match for platform in manifest: not found`. **Every Dockerfile in this
+> repo pins `--platform=linux/amd64` on its `FROM` line**, so builds just work
+> with no extra flags. Docker emulates the Intel image; on Intel/Windows the
+> pin is a harmless no-op.
+
 ---
 
 ## ✅ Before you start

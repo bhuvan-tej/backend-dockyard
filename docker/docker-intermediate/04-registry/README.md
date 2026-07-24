@@ -66,29 +66,37 @@ GHCR needs a token to authenticate you when pushing images.
 ## Step 2 — Log In to GHCR From the Terminal
 
 ---
-```powershell
-# Store your token in a variable so you do not have to type it repeatedly
-# Replace YOUR_TOKEN with the token you just copied from GitHub
-$token = "YOUR_TOKEN"
- 
-# Replace YOUR_USERNAME with your actual GitHub username
-$username = "YOUR_USERNAME"
- 
+```bash
+# 🍎 macOS / Linux (bash / zsh)
+# Store your token and username in variables
+# Replace the placeholders with your real token and GitHub username
+TOKEN="YOUR_TOKEN"
+USERNAME="YOUR_USERNAME"
+
 # Log in to GitHub Container Registry
-# --username is your GitHub username
-# --password-stdin reads the password from the pipeline instead of
-#   typing it directly which would expose it in your terminal history
+# --password-stdin reads the token from the pipe instead of typing it,
+#   so it never lands in your shell history
+echo "$TOKEN" | docker login ghcr.io --username "$USERNAME" --password-stdin
+```
+```powershell
+# 🪟 Windows (PowerShell)
+$token = "YOUR_TOKEN"
+$username = "YOUR_USERNAME"
+
 echo $token | docker login ghcr.io --username $username --password-stdin
- 
-# You should see: Login Succeeded
+```
+```
+# Either way you should see:  Login Succeeded
 ```
 
 ## Step 3 — Build the Image With the Correct Tag
 
 ---
-```powershell
+```bash
 # Navigate to the dockerfile folder which has HelloDocker.java and Dockerfile
-cd docker\docker-basics\02-dockerfile
+# 🍎 macOS / Linux
+cd docker/docker-basics/02-dockerfile
+# 🪟 Windows (PowerShell):  cd docker\docker-basics\02-dockerfile
  
 # Build the image with a full GHCR tag
 # Replace YOUR_USERNAME with your actual GitHub username
@@ -97,22 +105,23 @@ cd docker\docker-basics\02-dockerfile
 docker build -t ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:v1.0 .
  
 # Verify the image was built and tagged correctly
-# Look for your image in the list with the full ghcr.io tag
-docker images | Select-String "hello-docker"
+# 🍎 macOS / Linux:    docker images | grep hello-docker
+# 🪟 Windows:          docker images | Select-String "hello-docker"
+docker images | grep hello-docker
 ```
 
 ## Step 4 — Push the Image to GHCR
 
-```powershell
+```bash
 # Push the image to GitHub Container Registry
 # Docker reads the tag to know which registry and repository to push to
-# ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:v1.0
 docker push ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:v1.0
  
 # Also tag it as latest and push that too
 # latest is a convention meaning the most recent stable version
-# -t adds an additional tag to an existing image without rebuilding
-docker tag ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:v1.0 `
+# docker tag adds an additional name to an existing image without rebuilding
+# 🍎 macOS / Linux use \ to continue a line · 🪟 Windows uses a backtick `
+docker tag ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:v1.0 \
            ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:latest
  
 # Push the latest tag
@@ -132,7 +141,7 @@ docker push ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:latest
 ## Step 6 — Pull the Image From GHCR
 
 ---
-```powershell
+```bash
 # Delete the local image first so we prove the pull works
 # This removes both tags we pushed
 docker rmi ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:v1.0
@@ -161,7 +170,7 @@ pullable without authentication:
 ```
 
 After this anyone can pull your image with:
-```powershell
+```bash
 # No login needed for public packages
 docker pull ghcr.io/YOUR_USERNAME/backend-dockyard/hello-docker:latest
 ```

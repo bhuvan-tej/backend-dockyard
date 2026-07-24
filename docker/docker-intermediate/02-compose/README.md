@@ -85,10 +85,12 @@ networks: {}           # Custom network definitions
 ## Step 1 — Start the Full Stack
 
 ---
-```powershell
+```bash
 # Make sure you are in the 02-compose folder
 # docker-compose.yml must be in the current folder for these commands to work
-cd docker\docker-intermediate\02-compose
+# 🍎 macOS / Linux
+cd docker/docker-intermediate/02-compose
+# 🪟 Windows (PowerShell):  cd docker\docker-intermediate\02-compose
  
 # Start all services in the background
 # -d means detached, runs without blocking your terminal
@@ -105,7 +107,7 @@ docker compose up -d
 ## Step 2 — Watch the Logs
 
 ---
-```powershell
+```bash
 # Follow logs from all services at once
 # Each line is prefixed with the service name so you know which container it came from
 # Press Ctrl+C to stop following — the containers keep running
@@ -122,7 +124,7 @@ docker compose logs -f postgres
 ## Step 3 — See All Running Services
 
 ---
-```powershell
+```bash
 # Show the status of all services defined in docker-compose.yml
 # You should see both postgres and app with status running
 docker compose ps
@@ -131,10 +133,11 @@ docker compose ps
 ## Step 4 — Test the App
  
 ---
-```powershell
+```bash
 # Open the app in your browser
 # The app increments a visit counter stored in PostgreSQL on every request
-Start-Process "http://localhost:8080"
+# 🍎 macOS: open http://localhost:8080  ·  🐧 Linux: xdg-open http://localhost:8080  ·  🪟 Windows: Start-Process "http://localhost:8080"
+open http://localhost:8080
  
 # Or use curl from the terminal
 # curl sends an HTTP request and prints the response
@@ -149,7 +152,7 @@ curl http://localhost:8080
 ## Step 5 — Prove the Database Is Separate From the App
  
 ---
-```powershell
+```bash
 # Restart only the app container without touching postgres
 # The visit count should continue from where it left off
 # because the data lives in postgres, not in the app container
@@ -162,7 +165,7 @@ curl http://localhost:8080
 ## Step 6 — Shell Into a Running Service
  
 ---
-```powershell
+```bash
 # Open a shell inside the postgres container
 # docker compose exec works like docker exec but uses the service name
 # psql is the PostgreSQL command line client
@@ -192,7 +195,7 @@ exit
 ## Step 7 — Scale a Service
 
 ---
-```powershell
+```bash
 # Run 3 instances of the app service
 # Useful for understanding how load balancing would work
 # Note: this will fail on port 8080 because you cannot bind the same port twice
@@ -209,7 +212,7 @@ docker compose up -d --scale app=1
 ## Step 8 — Stop Everything
  
 ---
-```powershell
+```bash
 # Stop all containers and remove them
 # The postgres_data volume is preserved so your data is safe
 docker compose down
@@ -223,7 +226,7 @@ curl http://localhost:8080
 ## Step 9 — Stop and Wipe Everything
  
 ---
-```powershell
+```bash
 # Stop all containers, remove them, AND delete the volumes
 # This wipes the database completely
 # Use this when you want a completely fresh start

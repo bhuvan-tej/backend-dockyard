@@ -42,7 +42,7 @@ public class Main {
         setupDatabase();
 
         // Start a simple HTTP server on port 8080
-        // This is what docker-compose maps to your Windows port 8080
+        // This is what docker-compose maps to your host port 8080
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
         // Handle all requests to the root path /

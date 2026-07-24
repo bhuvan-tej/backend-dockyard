@@ -21,7 +21,11 @@
 #
 # Why a specific tag (17-jdk-alpine) and not "latest"?
 # "latest" changes without notice. Pin your tag so builds are reproducible.
-FROM eclipse-temurin:17-jdk-alpine
+#
+# Why --platform=linux/amd64? The Temurin Alpine tags are amd64-only (no arm64).
+# The pin lets this build on Apple Silicon (emulated) and Intel/Windows (native)
+# with no extra flags. Harmless no-op on amd64 machines.
+FROM --platform=linux/amd64 eclipse-temurin:17-jdk-alpine
 
 # ── LABEL ───────────────────────────────────────────────────────────────────
 # Optional key-value metadata. Visible with: docker inspect hello-docker:02

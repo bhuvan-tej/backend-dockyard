@@ -1,6 +1,8 @@
 ## 📋 Docker Compose Commands Reference
 
-```powershell
+> Identical on macOS, Linux and Windows — Compose commands don't change per OS.
+
+```bash
 # Start all services in the background
 docker compose up -d
  
