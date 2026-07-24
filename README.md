@@ -126,13 +126,11 @@ Learning Docker the right way — not just what commands to run but why each one
 ---
 *Each project is a standalone runnable app with its own Dockerfile and Docker Compose file.*
 
-| Project                                                                                    | Stack                             | Status     |
-|--------------------------------------------------------------------------------------------|-----------------------------------|------------|
-| REST API with full CRUD                                                                    | Spring Boot + JPA + PostgreSQL    | ✅ Done    |
-| QR generator & decoder([API guide](spring-boot/02-qr-generator/qr-generator/API_GUIDE.md)) | Spring Boot + ZXing + H2          | ✅ Done    |
-| OTP + JWT authentication([API guide](spring-boot/03-otp-jwt-auth/otp-auth/API_GUIDE.md))   | Spring Security + JWT (JJWT) + H2 | ✅ Done    |
-| Spring AI basics — the 5 core LLM patterns                                                 | Spring AI + Ollama                | ⬜ Pending |
-
+| Project                                                                                                                          | Stack                             | Status     |
+|----------------------------------------------------------------------------------------------------------------------------------|-----------------------------------|------------|
+| REST API with full CRUD                                                                                                          | Spring Boot + JPA + PostgreSQL    | ✅ Done    |
+| QR generator & decoder([API guide](spring-boot/02-qr-generator/qr-generator/API_GUIDE.md))                                       | Spring Boot + ZXing + H2          | ✅ Done    |
+| OTP + JWT authentication([API guide](spring-boot/03-otp-jwt-auth/otp-auth/API_GUIDE.md))                                         | Spring Security + JWT (JJWT) + H2 | ✅ Done    |
 ## 🛠️ Tools
 
 ---

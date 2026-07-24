@@ -17,10 +17,12 @@ in seconds. Containers are faster and more efficient.
 A container is a running instance of that image like an object.
 Many containers can run from one image at the same time.
 
-**Q: How does Docker work on Windows?**
-> Docker Desktop uses WSL2 to run a lightweight Linux kernel inside
-Windows. Containers run as Linux processes inside WSL2.
-Commands typed in PowerShell are routed transparently.
+**Q: How does Docker work on macOS and Windows?**
+> Neither OS runs containers natively. Docker Desktop runs a lightweight
+Linux environment — a managed VM on macOS, WSL2 on Windows — and the
+Docker Engine lives there. Commands from your terminal (zsh/PowerShell)
+are routed to that Linux engine transparently, so containers are always
+Linux processes.
 
 **Q: What does each Dockerfile instruction do?**
 > FROM sets the base image. WORKDIR sets the working directory.
@@ -48,8 +50,8 @@ Use volumes to store data outside the container lifecycle.
 
 **Q: What is the difference between a named volume and a bind mount?**
 > Named volume is managed by Docker, best for production data.
-Bind mount maps a specific Windows folder, best for development
-where you want live file editing in IntelliJ.
+Bind mount maps a specific host folder (macOS or Windows), best for
+development where you want live file editing in IntelliJ.
 
 **Q: How do containers communicate with each other?**
 > Put them on the same Docker network. Docker provides built-in DNS
@@ -66,7 +68,7 @@ check the exit code. 137 means OOMKilled so increase memory limit.
 by the OS. Increase the container memory limit to fix it.
 
 **Q: How do you copy a file out of a container?**
-> docker cp containername:/path/inside /path/on/windows
+> docker cp containername:/path/inside /path/on/host
 Works on both running and stopped containers.
  
 ---

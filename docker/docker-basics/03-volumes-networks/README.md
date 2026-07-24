@@ -1,8 +1,9 @@
 # Volumes & Networking
 
 ## 🎯 Goal
-Master data persistence (volumes) and container-to-container communication(networks).
-These two concepts are the foundation of every multi-container app.
+qMaster data persistence (volumes) and container-to-container communication
+(networks) — on **macOS or Windows**. These two concepts are the foundation of
+every multi-container app.
 
 ---
 
@@ -31,17 +32,19 @@ THE SOLUTION:
 
 ```
 Named Volume       docker run -v my-vol:/app/data myimage
-  Docker manages where it's stored (inside WSL2 on Windows).
+  Docker manages where it's stored (inside the Linux VM / WSL2).
   Best for: databases, persistent app data, production.
 
-Bind Mount         docker run -v C:\my\folder:/app/data myimage
-  You specify the exact Windows folder.
-  Best for: development — edit files on Windows, container sees changes live.
+Bind Mount         docker run -v /host/folder:/app/data myimage
+  You specify the exact host folder (macOS or Windows path).
+  Best for: development — edit files on the host, container sees changes live.
 
 tmpfs              docker run --tmpfs /app/tmp myimage
   In-memory only. Gone when container stops.
   Best for: sensitive temporary data (tokens, caches).
 ```
+
+> 🧠 **Model B:** `-v` = "keep the data". Volume = the container's long-term memory.
 
 ---
 
@@ -64,101 +67,147 @@ THE SOLUTION — Docker Network DNS:
   The name never changes, even if the IP does.
 ```
 
+> 🧠 Think of a Docker network as a **phone book**: look up a container by *name*,
+> not by its ever-changing IP number.
+
 ---
 
 ## ✅ Exercises
 
 ### Exercise 1 — Named Volume: Data Outlives the Container
 
-```powershell
-# Create a named volume
+`docker volume` commands are identical on every OS:
+
+### 🍎 macOS
+```bash
 docker volume create my-data
 
 # Container 1: write data to the volume
-docker run --rm `
-  -v my-data:/data `
+docker run --rm \
+  -v my-data:/data \
   alpine sh -c "echo 'Saved by a named volume' > /data/note.txt && cat /data/note.txt"
 # Container 1 is GONE (--rm). But the volume persists.
 
 # Container 2: same volume, different container — data still there!
+docker run --rm -v my-data:/data alpine cat /data/note.txt
+
+docker volume inspect my-data   # where Docker stores it (inside the Linux VM)
+docker volume ls                # list all volumes
+docker volume rm my-data        # clean up
+```
+### 🪟 Windows
+```powershell
+docker volume create my-data
+
 docker run --rm `
   -v my-data:/data `
-  alpine cat /data/note.txt
+  alpine sh -c "echo 'Saved by a named volume' > /data/note.txt && cat /data/note.txt"
 
-# Inspect where Docker stores this on Windows (inside WSL2)
-docker volume inspect my-data
-# "Mountpoint" is inside WSL2 — Docker manages it, you don't need to touch it
+docker run --rm -v my-data:/data alpine cat /data/note.txt
 
-# List all volumes
+docker volume inspect my-data   # where Docker stores it (inside WSL2)
 docker volume ls
-
-# Clean up
 docker volume rm my-data
 ```
 
-### Exercise 2 — Bind Mount: Edit on Windows, See It in the Container
+### Exercise 2 — Bind Mount: Edit on the Host, See It in the Container
 
+### 🍎 macOS
+```bash
+# Create a folder and file on your Mac
+mkdir -p ~/docker-bindtest
+echo "Hello from macOS!" > ~/docker-bindtest/note.txt
+
+# Mount your host folder into a container and read the file
+docker run --rm -v ~/docker-bindtest:/data alpine cat /data/note.txt
+
+# Edit the file on your Mac, then read it again from a container
+nano ~/docker-bindtest/note.txt          # or: open -e ~/docker-bindtest/note.txt
+docker run --rm -v ~/docker-bindtest:/data alpine cat /data/note.txt
+# It sees the change immediately!
+
+rm -rf ~/docker-bindtest                 # clean up
+```
+### 🪟 Windows
 ```powershell
-# Create a folder and file on your Windows machine
+# Create a folder and file on Windows
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\docker-bindtest"
 "Hello from Windows!" | Set-Content "$env:USERPROFILE\docker-bindtest\note.txt"
 
-# Mount your Windows folder into a container and read the file
-docker run --rm `
-  -v "$env:USERPROFILE\docker-bindtest:/data" `
-  alpine cat /data/note.txt
+docker run --rm -v "$env:USERPROFILE\docker-bindtest:/data" alpine cat /data/note.txt
 
-# Edit the file on Windows (open in Notepad, change the text, save)
 notepad "$env:USERPROFILE\docker-bindtest\note.txt"
+docker run --rm -v "$env:USERPROFILE\docker-bindtest:/data" alpine cat /data/note.txt
 
-# Read it again from the container — sees the change immediately!
-docker run --rm `
-  -v "$env:USERPROFILE\docker-bindtest:/data" `
-  alpine cat /data/note.txt
-
-# This is how Spring Boot hot-reload dev setups work.
-# Edit code on Windows → container picks it up live, no rebuild.
-
-# Clean up
 Remove-Item -Recurse "$env:USERPROFILE\docker-bindtest"
 ```
+> This is how Spring Boot hot-reload dev setups work: edit code on the host →
+> container picks it up live, no rebuild.
 
 ### Exercise 3 — Docker Network: Containers Talking by Name
 
-```powershell
-# Create a custom network
+### 🍎 macOS
+```bash
 docker network create my-net
 
 # Start a server container (nginx as a simple HTTP server)
 docker run -d --name web-server --network my-net nginx
 
-# Start a client container on the SAME network
-# Access the server using its NAME — not its IP!
-docker run --rm `
-  --network my-net `
-  curlimages/curl `
-  curl -s http://web-server/
-# "web-server" in the URL resolves to nginx's container IP automatically.
-# This is Docker DNS — built-in, zero configuration.
+# Start a client on the SAME network — reach the server by its NAME, not IP
+docker run --rm --network my-net curlimages/curl curl -s http://web-server/
+# "web-server" resolves to nginx's IP automatically — built-in Docker DNS.
 
 # Prove it FAILS without the network (no DNS resolution):
-docker run --rm `
-  curlimages/curl `
-  curl -s --max-time 3 http://web-server/ 2>&1
-# Connection refused / timeout — different network, can't find it
+docker run --rm curlimages/curl curl -s --max-time 3 http://web-server/ 2>&1
 
-# Clean up
+docker stop web-server && docker rm web-server
+docker network rm my-net
+```
+### 🪟 Windows
+```powershell
+docker network create my-net
+
+docker run -d --name web-server --network my-net nginx
+
+docker run --rm --network my-net curlimages/curl curl -s http://web-server/
+
+docker run --rm curlimages/curl curl -s --max-time 3 http://web-server/ 2>&1
+
 docker stop web-server && docker rm web-server
 docker network rm my-net
 ```
 
-### Exercise 4 — The Real App+DB Pattern (Preview of Week 3)
+### Exercise 4 — The Real App+DB Pattern (Preview of Spring + Docker)
 
-```powershell
-# This is the exact pattern used in Spring Boot + Docker!
+### 🍎 macOS
+```bash
 docker network create app-net
 
 # Start PostgreSQL — its container NAME becomes its DNS hostname
+docker run -d \
+  --name postgres \
+  --network app-net \
+  -e POSTGRES_USER=appuser \
+  -e POSTGRES_PASSWORD=apppass \
+  -e POSTGRES_DB=appdb \
+  -v pg-data:/var/lib/postgresql/data \
+  postgres:15-alpine
+
+sleep 5   # give it a moment to start
+
+# Connect from ANOTHER container using the name "postgres"
+docker run --rm --network app-net postgres:15-alpine \
+  psql -h postgres -U appuser -d appdb -c "\l"
+# -h postgres  = hostname is the container name!
+
+docker stop postgres && docker rm postgres
+docker volume rm pg-data
+docker network rm app-net
+```
+### 🪟 Windows
+```powershell
+docker network create app-net
+
 docker run -d `
   --name postgres `
   --network app-net `
@@ -168,53 +217,41 @@ docker run -d `
   -v pg-data:/var/lib/postgresql/data `
   postgres:15-alpine
 
-# Give it 5 seconds to start
 Start-Sleep -Seconds 5
 
-# Connect from ANOTHER container using the name "postgres"
-docker run --rm `
-  --network app-net `
-  postgres:15-alpine `
+docker run --rm --network app-net postgres:15-alpine `
   psql -h postgres -U appuser -d appdb -c "\l"
-# -h postgres  = hostname is the container name!
 
-# In Spring Boot application.yml (Week 3):
-#   spring.datasource.url=jdbc:postgresql://postgres:5432/appdb
-#                                           ^^^^^^^^
-#                                           Container name = hostname
-
-# Clean up
 docker stop postgres && docker rm postgres
 docker volume rm pg-data
 docker network rm app-net
 ```
 
+> In Spring Boot `application.yml`:
+> `spring.datasource.url=jdbc:postgresql://postgres:5432/appdb`
+> The `postgres` in the URL is the **container name = hostname**.
+
 ---
 
-## 🪟 Windows Volume Path Reference
+## 🗂️ Host Volume Path Reference
 
-```powershell
-# Absolute Windows path:
-docker run -v C:\Users\YourName\data:/app/data myimage
+```
+                     🍎 macOS / Linux                🪟 Windows (PowerShell)
+Absolute path        -v /Users/me/data:/app/data     -v C:\Users\Me\data:/app/data
+Home folder          -v ~/data:/app/data             -v "$env:USERPROFILE\data:/app/data"
+Current directory    -v "$PWD/data:/app/data"        -v "${PWD}\data:/app/data"
+Named volume         -v my-volume:/app/data          -v my-volume:/app/data   (same!)
 
-# Environment variable for user home:
-docker run -v "$env:USERPROFILE\data:/app/data" myimage
-
-# Current directory (PowerShell):
-docker run -v "${PWD}\data:/app/data" myimage
-
-# Named volumes (no Windows path needed):
-docker run -v my-volume:/app/data myimage
-
-# KEY RULE: Container path always uses forward slashes (Linux-style):
-#   ✅  /app/data
-#   ❌  \app\data
-#   ❌  C:\app\data    (inside the container there's no C drive!)
+KEY RULE: the CONTAINER side is ALWAYS a Linux path with forward slashes:
+  ✅  /app/data
+  ❌  \app\data
+  ❌  C:\app\data     (inside the container there's no C: drive!)
+  ❌  ~/app/data      (no host home inside the container either!)
 ```
 
 ---
 
-## 📝 Interview Questions This Day Covers
+## 📝 Interview Questions This Module Covers
 
 **Q: What happens to data when a Docker container is removed?**
 > All data written inside the container's own filesystem is lost. To persist data, mount a volume — the volume exists outside the container lifecycle and survives removal.

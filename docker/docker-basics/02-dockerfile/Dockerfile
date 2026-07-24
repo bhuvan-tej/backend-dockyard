@@ -4,9 +4,9 @@
 # Read EVERY comment before running docker build.
 # Understand each instruction — don't treat this as boilerplate.
 #
-# Build:  docker build -t hello-docker:day2 .
-# Run:    docker run --rm hello-docker:day2
-# Run:    docker run --rm -e MY_NAME="Alice" hello-docker:day2
+# Build:  docker build -t hello-docker:02 .
+# Run:    docker run --rm hello-docker:02
+# Run:    docker run --rm -e MY_NAME="Alice" hello-docker:02
 # ─────────────────────────────────────────────────────────────────────────
 
 # ── FROM ───────────────────────────────────────────────────────────────────
@@ -24,7 +24,7 @@
 FROM eclipse-temurin:17-jdk-alpine
 
 # ── LABEL ───────────────────────────────────────────────────────────────────
-# Optional key-value metadata. Visible with: docker inspect hello-docker:day2
+# Optional key-value metadata. Visible with: docker inspect hello-docker:02
 LABEL maintainer="YOUR_GITHUB_USERNAME"
 LABEL day="02"
 
@@ -36,7 +36,7 @@ LABEL day="02"
 WORKDIR /app
 
 # ── COPY ────────────────────────────────────────────────────────────────────
-# Copies files FROM your Windows machine INTO the container image.
+# Copies files FROM your machine (macOS/Windows/Linux) INTO the container image.
 # Format: COPY <source on host>  <destination in container>
 #
 # The . destination means "current WORKDIR" = /app
@@ -56,7 +56,7 @@ RUN javac HelloDocker.java
 # These are DEFAULT values — can be overridden at runtime.
 #
 # In Java: read with System.getenv("MY_NAME")
-# Override at docker run: docker run -e MY_NAME="Alice" hello-docker:day2
+# Override at docker run: docker run -e MY_NAME="Alice" hello-docker:02
 # In Spring Boot: these map directly to application properties
 ENV MY_NAME="Docker Learner"
 ENV APP_ENV="development"
