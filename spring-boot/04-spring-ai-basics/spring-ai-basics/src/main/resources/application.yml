@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: spring-ai-basics
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # ===========================================================================
+  #  Spring AI — model provider configuration. This is the ONLY config that
+  #  makes the app "AI-powered". Everything else is ordinary Spring Boot.
+  #
+  #  DEFAULT = Ollama, which runs models locally on your machine for free (no
+  #  API key, no cloud bill). Install it once, and Spring AI talks to it over
+  #  http://localhost:11434 using ONE chat model (qwen2.5). Unlike the RAG
+  #  project there is no embedding model here — we only chat.
+  #
+  #  `pull-model-strategy: when_missing` auto-downloads the model on first
+  #  startup, so setup is a single step.
+  #
+  #  Why qwen2.5? It follows JSON schemas and instructions more reliably than
+  #  smaller models, which matters for the /chat/country structured-output demo.
+  #  Any Ollama model works — override with AI_CHAT_MODEL (e.g. llama3.2).
+  #
+  #  To use OpenAI instead: swap the pom dependency and replace this whole
+  #  `ollama` block with:
+  #     openai:
+  #       api-key: ${OPENAI_API_KEY}
+  #       chat:
+  #         options:
+  #           model: gpt-4o-mini
+  # ===========================================================================
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      init:
+        pull-model-strategy: when_missing
+      chat:
+        options:
+          model: ${AI_CHAT_MODEL:qwen2.5}
+          temperature: 0.4          # a little creativity; lower = more factual
+
+server:
+  port: 8080
+  shutdown: graceful
+  servlet:
+    context-path: /api            # every endpoint lives under /api
+
+# Actuator — health, info and metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# SpringDoc OpenAPI — Swagger UI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+
+info:
+  app:
+    name: spring-ai-basics
+    description: The cleanest introduction to Spring AI — five core patterns over one ChatClient
+    version: 1.0.0

@@ -81,8 +81,7 @@ backend-dockyard/
 ├── kubernetes/                 Orchestration from local cluster to production
 ├── spring-boot/                Real Spring Boot apps, each fully runnable
 ├── design-patterns/            GoF patterns applied to actual Spring Boot code
-├── dsa/                        Interview DSA in Java with full explanations
-└── system-design/              Architecture docs backed by working code
+└──  dsa/                       Interview DSA in Java with full explanations
 ```
 
 ## 🐳 Docker
@@ -131,6 +130,7 @@ Learning Docker the right way — not just what commands to run but why each one
 | REST API with full CRUD                                                                                                          | Spring Boot + JPA + PostgreSQL    | ✅ Done    |
 | QR generator & decoder([API guide](spring-boot/02-qr-generator/qr-generator/API_GUIDE.md))                                       | Spring Boot + ZXing + H2          | ✅ Done    |
 | OTP + JWT authentication([API guide](spring-boot/03-otp-jwt-auth/otp-auth/API_GUIDE.md))                                         | Spring Security + JWT (JJWT) + H2 | ✅ Done    |
+| Spring AI basics — the 5 core LLM patterns([explained](spring-boot/04-spring-ai-basics/spring-ai-basics/SPRING_AI_EXPLAINED.md)) | Spring AI + Ollama                | ✅ Done    |
 ## 🛠️ Tools
 
 ---

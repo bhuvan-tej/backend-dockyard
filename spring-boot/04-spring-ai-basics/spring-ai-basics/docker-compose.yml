@@ -1,0 +1,59 @@
+# Docker Compose for Spring AI Basics.
+#
+# Project needs a model provider. This compose file bundles
+# one — Ollama — so the whole stack (app + local LLM) comes up with a single
+# command and NO cloud account or API key:
+#
+#   docker compose up --build
+#
+# Then open http://localhost:8080/api/swagger-ui.html
+#
+# NOTE: the first request triggers a one-time model download inside the Ollama
+# container (a couple of GB for qwen2.5), so it will be slow. Subsequent runs
+# reuse the named volume and are fast. On an Apple-silicon Mac, running Ollama
+# natively (see the README) is faster than in Docker because the container
+# can't use the GPU.
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: basics-ollama
+    ports:
+      - "11434:11434"          # exposed so you can `ollama` against it too
+    volumes:
+      - ollama-models:/root/.ollama   # persist pulled models across restarts
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  spring-ai-basics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dockyard/spring-ai-basics:1.0.0
+    container_name: spring-ai-basics
+    depends_on:
+      ollama:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      # Point the app at the Ollama container instead of localhost.
+      OLLAMA_BASE_URL: http://ollama:11434
+      # Override the chat model here if you want a smaller/faster one.
+      AI_CHAT_MODEL: qwen2.5
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+volumes:
+  ollama-models:
