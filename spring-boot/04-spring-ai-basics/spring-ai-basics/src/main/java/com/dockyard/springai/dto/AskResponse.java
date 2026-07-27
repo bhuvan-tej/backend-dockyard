@@ -6,4 +6,3 @@ package com.dockyard.springai.dto;
  * @param answer the model's reply
  */
 public record AskResponse(String answer) {}
-

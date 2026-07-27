@@ -16,4 +16,3 @@ public record PersonaRequest(
         @NotBlank(message = "message is required")
         String message
 ) {}
-

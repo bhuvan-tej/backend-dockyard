@@ -11,4 +11,3 @@ public record AskRequest(
         @NotBlank(message = "message is required")
         String message
 ) {}
-

@@ -30,4 +30,3 @@ public class SpringAiBasicsApplication {
         SpringApplication.run(SpringAiBasicsApplication.class, args);
     }
 }
-

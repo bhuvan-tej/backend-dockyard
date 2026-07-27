@@ -17,4 +17,3 @@ public record TranslateRequest(
         @NotBlank(message = "language is required")
         String language
 ) {}
-

@@ -11,4 +11,3 @@ public class AiUnavailableException extends RuntimeException {
         super(message, cause);
     }
 }
-

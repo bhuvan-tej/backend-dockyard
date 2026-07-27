@@ -82,5 +82,5 @@ public class ChatController {
     public Flux<String> stream(@RequestParam String message) {
         return assistant.stream(message);
     }
-}
 
+}
