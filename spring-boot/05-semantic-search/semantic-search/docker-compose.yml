@@ -1,0 +1,57 @@
+# Docker Compose for Semantic Search.
+#
+# This project needs an EMBEDDING model provider. This compose file bundles one —
+# Ollama — so the whole stack (app + local embedding model) comes up with a single
+# command and NO cloud account or API key:
+#
+#   docker compose up --build
+#
+# Then open http://localhost:8080/api/swagger-ui.html
+#
+# NOTE: the first request triggers a one-time model download inside the Ollama
+# container (~275 MB for nomic-embed-text — much smaller than a chat model), so
+# it will be a little slow. Subsequent runs reuse the named volume and are fast.
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: semantic-search-ollama
+    ports:
+      - "11434:11434"          # exposed so you can `ollama` against it too
+    volumes:
+      - ollama-models:/root/.ollama   # persist pulled models across restarts
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  semantic-search:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dockyard/semantic-search:1.0.0
+    container_name: semantic-search
+    depends_on:
+      ollama:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      # Point the app at the Ollama container instead of localhost.
+      OLLAMA_BASE_URL: http://ollama:11434
+      # Only an embedding model is needed — no chat model here.
+      SEARCH_EMBEDDING_MODEL: nomic-embed-text
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+volumes:
+  ollama-models:

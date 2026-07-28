@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: semantic-search
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # ===========================================================================
+  #  Spring AI — model provider configuration. This is the ONLY config that
+  #  makes the app "AI-powered". Everything else is ordinary Spring Boot.
+  #
+  #  DEFAULT = Ollama, which runs models locally on your machine for free (no
+  #  API key, no cloud bill). Install it once, and Spring AI talks to it over
+  #  http://localhost:11434.
+  #
+  #  UNLIKE the basics and RAG projects, we use ONLY an EMBEDDING model
+  #  (nomic-embed-text) here — there is NO chat model, because semantic search
+  #  never asks an LLM to write anything. It only turns text into vectors and
+  #  compares them.
+  #
+  #  `pull-model-strategy: when_missing` auto-downloads the model on first
+  #  startup, so setup is a single step.
+  #
+  #  To use OpenAI instead: swap the pom dependency and replace this whole
+  #  `ollama` block with:
+  #     openai:
+  #       api-key: ${OPENAI_API_KEY}
+  #       embedding:
+  #         options:
+  #           model: text-embedding-3-small
+  # ===========================================================================
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      init:
+        pull-model-strategy: when_missing
+      embedding:
+        options:
+          model: ${SEARCH_EMBEDDING_MODEL:nomic-embed-text}
+
+# --- Search rules (tunable, bound to SearchProperties) ---
+search:
+  # Default number of nearest matches to return, and the minimum cosine
+  # similarity (0..1) a match must reach. Threshold 0 = always return the topK.
+  top-k: 5
+  similarity-threshold: 0.0
+
+server:
+  port: 8080
+  shutdown: graceful
+  servlet:
+    context-path: /api            # every endpoint lives under /api
+
+# Actuator — health, info and metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# SpringDoc OpenAPI — Swagger UI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+
+info:
+  app:
+    name: semantic-search
+    description: Search text by meaning with Spring AI embeddings — the retrieval half of RAG, isolated
+    version: 1.0.0
