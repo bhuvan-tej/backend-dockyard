@@ -12,7 +12,7 @@ returns the stored texts whose meaning is closest — even when they share no wo
 
 This is the **"R" in R-A-G, extracted**. Once it clicks here, the RAG project is
 just "do this retrieval, then hand the results to a `ChatClient`" — which you
-already learned in `04-spring-ai-basics`.
+already learned in `01-spring-ai-basics`.
 
 > 🧭 **Where this sits in the learning path**
 > ```

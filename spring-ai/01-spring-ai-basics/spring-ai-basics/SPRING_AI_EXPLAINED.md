@@ -179,7 +179,7 @@ ZXing and the OTP project makes with JJWT.
 
 ## 5. How this grows into RAG
 
-RAG (the [`07-ai-rag-service`](../../07-ai-rag-service) project) is **not** a new
+RAG (the [`04-ai-rag-service`](../../04-ai-rag-service) project) is **not** a new
 Spring AI feature — it's these primitives plus a search step:
 
 ```mermaid

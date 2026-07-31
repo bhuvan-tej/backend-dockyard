@@ -113,13 +113,13 @@ QR project and JJWT in the OTP project.
 ## 6. From semantic search to RAG (the whole point)
 
 RAG is **not** a new, separate thing — it is *this* plus two steps you already know
-from `04-spring-ai-basics`:
+from `01-spring-ai-basics`:
 
 ```
 SEMANTIC SEARCH (this project)
   question ─► embed ─► similarity search ─► top-K relevant texts
                                                 │
-RAG (07-ai-rag-service)                         ▼
+RAG (04-ai-rag-service)                         ▼
   … ─► top-K texts ─► paste into a prompt as CONTEXT ─► ChatClient ─► grounded answer
         (retrieve)        (augment)                       (generate)
 ```
