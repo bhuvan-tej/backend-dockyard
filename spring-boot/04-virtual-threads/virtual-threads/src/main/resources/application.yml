@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: virtual-threads
+
+  # THE ONE-LINE SWITCH: makes Tomcat hand every incoming HTTP request to a
+  # brand-new virtual thread instead of borrowing one from a fixed platform
+  # thread pool. Turn this off to feel the difference on /demo/request-thread
+  # under concurrent load — see ThreadingConfig for the manual-executor version
+  # of the same idea, used by /demo/run and /demo/compare.
+  threads:
+    virtual:
+      enabled: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+  shutdown: graceful
+  servlet:
+    context-path: /api        # every endpoint lives under /api
+
+# Actuator — health, info, metrics, and /actuator/threaddump to literally see
+# "VirtualThread[...]" entries while a demo request is in flight.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,threaddump
+  endpoint:
+    health:
+      show-details: always
+
+# SpringDoc OpenAPI — Swagger UI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+
+info:
+  app:
+    name: virtual-threads
+    description: Java 21 virtual threads vs platform threads, side by side
+    version: 1.0.0

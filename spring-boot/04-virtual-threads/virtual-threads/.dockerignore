@@ -1,0 +1,11 @@
+# Exclude everything not needed inside the Docker build context.
+target/
+.idea/
+*.iml
+.vscode/
+.git/
+.gitignore
+.DS_Store
+*.log
+README.md
+docs/
