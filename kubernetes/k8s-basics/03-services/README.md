@@ -55,9 +55,13 @@ Zero configuration needed.
 
 ## ⚙️ Exercises
 
+> 🖥️ **Shell note:** the `kubectl` / `minikube` commands are identical on
+> every OS. Blocks are written for **macOS / Linux**; Windows PowerShell
+> differences (path `\`, line-continuation backtick `` ` ``) are noted inline.
+
 ---
 ### ✅ Prerequisites Check
-```
+```bash
 minikube start
 
 # Check cluster is up
@@ -71,7 +75,8 @@ kubectl get namespaces
 # If namespace is gone recreate it
 kubectl create namespace backend-dockyard
 
-cd kubernetes\k8s-basics\03-services
+cd kubernetes/k8s-basics/03-services
+# 🪟 Windows PowerShell: cd kubernetes\k8s-basics\03-services
 
 # Deploy the app first
 kubectl apply -f ../02-pods-deployments/deployment.yaml -n backend-dockyard
@@ -82,7 +87,7 @@ kubectl get pods -n backend-dockyard
 
 ### 🧪 Exercise 1 — Deploy the App First
 
-```powershell
+```bash
 # The Service needs Pods to route traffic to
 # Apply the Deployment from 02-pods-deployments first
 kubectl apply -f ../02-pods-deployments/deployment.yaml -n backend-dockyard
@@ -93,7 +98,7 @@ kubectl get pods -n backend-dockyard
 
 ### 🔗 Exercise 2 — Create a ClusterIP Service
 
-```powershell
+```bash
 # Apply the ClusterIP Service
 kubectl apply -f service-clusterip.yaml -n backend-dockyard
  
@@ -109,19 +114,20 @@ kubectl describe service my-app-service -n backend-dockyard
 
 ### 🌐 Exercise 3 — Prove ClusterIP DNS Works
 
-```powershell
-# ClusterIP is not accessible from your Windows machine
+```bash
+# ClusterIP is not accessible from your host machine
 # But other Pods inside the cluster can reach it by name
  
 # Start a temporary Pod just to test connectivity
 # --rm removes it automatically when you exit
 # -it opens an interactive terminal
 # alpine is a tiny Linux image good for testing
-kubectl run test-pod --rm -it `
-  --image=alpine `
-  --restart=Never `
-  -n backend-dockyard `
+kubectl run test-pod --rm -it \
+  --image=alpine \
+  --restart=Never \
+  -n backend-dockyard \
   -- sh
+# 🪟 Windows PowerShell: replace the trailing \ with a backtick `
  
 # Inside the test Pod — you are now inside the cluster
 # Use wget to hit the Service by its DNS name
@@ -141,7 +147,7 @@ exit
 
 ### 🚪 Exercise 4 — Create a NodePort Service
 
-```powershell
+```bash
 # Apply the NodePort Service
 kubectl apply -f service-nodeport.yaml -n backend-dockyard
  
@@ -152,16 +158,16 @@ kubectl get svc -n backend-dockyard
 kubectl describe service my-app-nodeport -n backend-dockyard
 ```
 
-### 🖥️ Exercise 5 — Access the App From Your Windows Machine
+### 🖥️ Exercise 5 — Access the App From Your Host Machine
 
-```powershell
+```bash
 # minikube service opens the NodePort Service in your browser
 # It finds the minikube node IP and the nodePort automatically
 minikube service my-app-nodeport -n backend-dockyard
- 
+
 # Or get the URL to use with curl
 minikube service my-app-nodeport -n backend-dockyard --url
- 
+
 # Use the URL from above with curl
 # Replace the URL with what minikube printed
 curl http://MINIKUBE-IP:30080
@@ -170,7 +176,7 @@ curl http://MINIKUBE-IP:30080
 
 ### ⚖️ Exercise 6 — See Load Balancing in Action
 
-```powershell
+```bash
 # Get the Pod names
 kubectl get pods -n backend-dockyard
  
@@ -182,17 +188,18 @@ kubectl logs -f my-app-zzzzz-zzzzz -n backend-dockyard
  
 # Send multiple requests from another terminal
 # Watch which Pods log each request — load is distributed
-$url = $(minikube service my-app-nodeport -n backend-dockyard --url)
+url=$(minikube service my-app-nodeport -n backend-dockyard --url)
 curl $url
 curl $url
 curl $url
 curl $url
 curl $url
+# 🪟 Windows PowerShell: $url = $(minikube service my-app-nodeport -n backend-dockyard --url)
 ```
 
 ### 🔍 Exercise 7 — Port Forward for Quick Access
 
-```powershell
+```bash
 # kubectl port-forward is another way to access Services locally
 # Forwards your local port 8080 to the Service port 80
 # Useful for quick testing without creating a NodePort
@@ -205,7 +212,7 @@ curl http://localhost:8080
 
 ### 🛑 Exercise 8 — Clean Up
 
-```powershell
+```bash
 # Delete both Services
 kubectl delete -f service-clusterip.yaml -n backend-dockyard
 kubectl delete -f service-nodeport.yaml -n backend-dockyard

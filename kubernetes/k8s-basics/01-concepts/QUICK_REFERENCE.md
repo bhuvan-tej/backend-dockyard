@@ -43,7 +43,7 @@ kubectl get nodes
 ### 🔍 Check the Cluster
 
 ---
-```powershell
+```bash
 # See overall cluster info
 # Shows the API Server URL and other component URLs
 kubectl cluster-info
@@ -55,7 +55,7 @@ kubectl describe node minikube
 ### 🗂️ Explore Default 
 
 ---
-```powershell
+```bash
 # List all namespaces that Kubernetes created by default
 kubectl get namespaces
  
@@ -75,7 +75,7 @@ kubectl get all --all-namespaces
 ### 🎛️ Open the Kubernetes Dashboard
 
 ---
-```powershell
+```bash
 # Opens a web UI in your browser to see all cluster resources visually
 # Press Ctrl+C to close the proxy when done
 minikube dashboard

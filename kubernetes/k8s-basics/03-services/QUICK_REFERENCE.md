@@ -1,6 +1,6 @@
 ## 📋 Quick Reference
 
-```powershell
+```bash
 # List Services
 kubectl get services -n namespace
 kubectl get svc -n namespace

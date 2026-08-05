@@ -40,10 +40,15 @@ spec:         the desired state you want Kubernetes to maintain
 
 ## ⚙️ Exercises
 
+> 🖥️ **Shell note:** every `kubectl` and `minikube` command below is
+> **identical on macOS, Linux and Windows**. Only the shell wrapper differs:
+> paths use `/` on macOS/Linux and `\` on Windows PowerShell. The blocks are
+> written for **macOS / Linux (zsh/bash)**; Windows differences are noted inline.
+
 ### ✅ Prerequisites Check
 
 ---
-```
+```bash
 # Start minikube fresh
 minikube start --driver=docker --memory=4096 --cpus=2
 
@@ -60,13 +65,14 @@ kubectl get namespaces
 # backend-dockyard should appear
 
 # Navigate to the folder
-cd kubernetes\k8s-basics\02-pods-deployments
+cd kubernetes/k8s-basics/02-pods-deployments
+# 🪟 Windows PowerShell: cd kubernetes\k8s-basics\02-pods-deployments
 ```
 
 ---
 ### 🧪 Exercise 1 — Deploy a Bare Pod and See the Problem
 
-```powershell
+```bash
 # Apply the pod.yaml to create a standalone Pod
 # -f specifies the file
 # -n specifies the namespace
@@ -94,7 +100,7 @@ kubectl get pods -n backend-dockyard
 ### 🚀 Exercise 2 — Deploy With a Deployment and See Self-Healing
 
 ---
-```powershell
+```bash
 # Apply the deployment.yaml
 kubectl apply -f deployment.yaml -n backend-dockyard
  
@@ -112,7 +118,7 @@ kubectl describe deployment my-app -n backend-dockyard
 ### 💥 Exercise 3 — Prove Self-Healing
 
 ---
-```powershell
+```bash
 # Get the names of the running Pods
 kubectl get pods -n backend-dockyard
  
@@ -131,7 +137,7 @@ kubectl get pods -n backend-dockyard -w
 ### 📈 Exercise 4 — Scale Up and Down
 
 ---
-```powershell
+```bash
 # Scale up to 5 replicas
 # --replicas sets the new desired count
 kubectl scale deployment my-app --replicas=5 -n backend-dockyard
@@ -149,7 +155,7 @@ kubectl get pods -n backend-dockyard -w
 ### 🔁 Exercise 5 — Rolling Update
 
 ---
-```powershell
+```bash
 # Update the image to a newer version of nginx
 # set image updates the container image inside the Deployment
 # my-app=nginx:1.25-alpine means set container named my-app to this image
@@ -166,7 +172,7 @@ kubectl rollout status deployment/my-app -n backend-dockyard
 ### ⏪ Exercise 6 — Rollback
 
 ---
-```powershell
+```bash
 # See the rollout history
 # Shows each revision with the change that triggered it
 kubectl rollout history deployment/my-app -n backend-dockyard
@@ -184,7 +190,7 @@ kubectl rollout status deployment/my-app -n backend-dockyard
 ### 🔍 Exercise 7 — Shell Into a Pod
 
 ---
-```powershell
+```bash
 # Get a Pod name to exec into
 kubectl get pods -n backend-dockyard
  
@@ -203,7 +209,7 @@ exit
 ### 🛑 Exercise 8 — Clean Up
 
 ---
-```powershell
+```bash
 # Delete the Deployment — this also deletes all its Pods
 kubectl delete -f deployment.yaml -n backend-dockyard
  

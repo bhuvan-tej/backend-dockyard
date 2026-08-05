@@ -1,7 +1,7 @@
 ## 📋 Quick Reference
 
 ---
-```powershell
+```bash
 # Apply a YAML file to the cluster
 kubectl apply -f file.yaml -n namespace
  
