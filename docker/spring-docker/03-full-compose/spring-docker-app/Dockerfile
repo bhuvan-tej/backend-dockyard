@@ -16,7 +16,7 @@
 # ─────────────────────────────────────────────────────────────────────
 
 # AS builder gives this stage a name so we can reference it in stage 2
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM --platform=linux/amd64 eclipse-temurin:17-jdk-alpine AS builder
 
 # Set the working directory for all commands in this stage
 WORKDIR /build
@@ -75,7 +75,7 @@ RUN ls -la target/*.jar
 # Fresh start from a smaller base image
 # JRE = Java Runtime Environment — can run JARs but cannot compile Java
 # Alpine keeps the image small
-FROM eclipse-temurin:17-jre-alpine AS runtime
+FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine AS runtime
 
 # Set the working directory inside the runtime container
 WORKDIR /app
