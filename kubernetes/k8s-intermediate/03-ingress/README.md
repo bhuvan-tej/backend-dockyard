@@ -122,7 +122,7 @@ Without it every path except / returns 404.
 ## ✅ Prerequisites
 
 ---
-```powershell
+```bash
 # Start minikube if not already running
 minikube start
  
@@ -136,7 +136,7 @@ kubectl get pods -n ingress-nginx -w
 # Press Ctrl+C when you see ingress-nginx-controller   Running
  
 # Verify namespace exists
-kubectl get namespaces | Select-String "backend-dockyard"
+kubectl get namespaces | grep backend-dockyard
  
 # If missing recreate it
 kubectl create namespace backend-dockyard
@@ -149,12 +149,16 @@ kubectl delete all --all -n backend-dockyard
 
 ## ⚙️ Exercises
 
+> 🖥️ **Shell note:** commands are written for **macOS / Linux (zsh/bash)**.
+> On **Windows PowerShell** swap `/` for `\` in the `cd` paths — the
+> `kubectl` / `minikube` commands are identical on every OS.
+
 ---
 ### 🧪 Exercise 1 — Deploy the Two Apps and Services
 
-```powershell
+```bash
 # Navigate to the folder
-cd kubernetes\k8s-intermediate\03-ingress
+cd kubernetes/k8s-intermediate/03-ingress
  
 # Apply the Deployment and Service file
 # This creates: products-app, products-service, orders-app, orders-service
@@ -171,7 +175,7 @@ kubectl get services -n backend-dockyard
 
 ### 🚦 Exercise 2 — Create the Ingress
 
-```powershell
+```bash
 # Apply the Ingress routing rules
 kubectl apply -f ingress.yaml -n backend-dockyard
  
@@ -185,7 +189,7 @@ kubectl describe ingress app-ingress -n backend-dockyard
 
 ### 🌐 Exercise 3 — Get the minikube IP and Test Routing
 
-```powershell
+```bash
 # Get the minikube cluster IP
 # This is the IP address of the minikube node
 minikube ip
@@ -208,7 +212,7 @@ curl http://localhost/unknown
 
 ### 🔍 Exercise 4 — Inspect the Ingress Controller Logs
 
-```powershell
+```bash
 # Get the Ingress controller Pod name
 kubectl get pods -n ingress-nginx
  
@@ -226,7 +230,7 @@ curl http://localhost/orders
 
 ### ➕ Exercise 5 — Add a New Route Without Changing Services
 
-```powershell
+```bash
 # Edit the Ingress to add a third route
 kubectl edit ingress app-ingress -n backend-dockyard
  
@@ -253,7 +257,7 @@ curl http://$(minikube ip)/health
 
 ### 🛑 Exercise 6 — Clean Up
 
-```powershell
+```bash
 # Delete all resources
 kubectl delete -f ingress.yaml -n backend-dockyard
 kubectl delete -f deployment-service.yaml -n backend-dockyard

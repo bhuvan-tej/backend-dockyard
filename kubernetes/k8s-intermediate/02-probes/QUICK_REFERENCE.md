@@ -1,7 +1,7 @@
 ## 📋 Quick Reference
 
 ---
-```powershell
+```bash
 # Watch Pods live
 kubectl get pods -n namespace -w
  

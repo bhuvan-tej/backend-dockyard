@@ -1,7 +1,7 @@
 ## 📋 Quick Reference
 
 ---
-```powershell
+```bash
 # Enable minikube addon
 minikube addons enable ingress
  

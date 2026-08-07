@@ -126,7 +126,7 @@ Metrics and other sensitive endpoints are never exposed outside.
 
 ## ✅ Prerequisites
 
-```powershell
+```bash
 # Start minikube if not already running
 minikube start
  
@@ -135,7 +135,7 @@ kubectl get nodes
 # Expected: minikube   Ready   control-plane
  
 # Verify namespace exists
-kubectl get namespaces | Select-String "backend-dockyard"
+kubectl get namespaces | grep backend-dockyard
  
 # If missing recreate it
 kubectl create namespace backend-dockyard
@@ -148,11 +148,15 @@ kubectl delete all --all -n backend-dockyard
 
 ## ⚙️ Exercises
 
+> 🖥️ **Shell note:** commands are written for **macOS / Linux (zsh/bash)**.
+> On **Windows PowerShell** swap `/` for `\` in the `cd` paths — the
+> `kubectl` commands are identical on every OS.
+
 ### 🧪 Exercise 1 — Deploy and Watch Probes Pass
 
-```powershell
+```bash
 # Navigate to the folder
-cd kubernetes\k8s-intermediate\02-probes
+cd kubernetes/k8s-intermediate/02-probes
  
 # Apply the Deployment
 kubectl apply -f deployment-with-probes.yaml -n backend-dockyard
@@ -168,7 +172,7 @@ kubectl get pods -n backend-dockyard -w
 
 ### 🔍 Exercise 2 — Inspect Probe Configuration on a Running Pod
 
-```powershell
+```bash
 # Get Pod names
 kubectl get pods -n backend-dockyard
  
@@ -184,7 +188,7 @@ kubectl describe pod probe-demo-xxxxx -n backend-dockyard
 
 ### 💥 Exercise 3 — Simulate a Liveness Failure
 
-```powershell
+```bash
 # Edit the deployment live in the cluster
 # Change the liveness probe path to something that does not exist
 kubectl edit deployment probe-demo -n backend-dockyard
@@ -210,7 +214,7 @@ kubectl edit deployment probe-demo -n backend-dockyard
 
 ### 🚦 Exercise 4 — Simulate a Readiness Failure
 
-```powershell
+```bash
 # Edit the deployment
 # Change the readiness probe path to something that does not exist
 kubectl edit deployment probe-demo -n backend-dockyard
@@ -239,7 +243,7 @@ kubectl get pods -n backend-dockyard -w
 
 ### 📊 Exercise 5 — Watch Events in Real Time
 
-```powershell
+```bash
 # In one terminal — watch pod status
 kubectl get pods -n backend-dockyard -w
  
@@ -252,7 +256,7 @@ kubectl get events -n backend-dockyard --sort-by=".lastTimestamp" -w
 
 ### 🛑 Exercise 6 — Clean Up
 
-```powershell
+```bash
 # Delete the Deployment
 kubectl delete -f deployment-with-probes.yaml -n backend-dockyard
  

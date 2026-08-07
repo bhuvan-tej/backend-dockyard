@@ -85,7 +85,7 @@ Production requires:
 ## ✅ Prerequisites
 
 ---
-```powershell
+```bash
 # Start minikube if not already running
 minikube start
  
@@ -94,18 +94,22 @@ kubectl get nodes
 # Expected: minikube   Ready   control-plane
  
 # Verify namespace exists — recreate if missing
-kubectl get namespaces | Select-String "backend-dockyard"
+kubectl get namespaces | grep backend-dockyard
 kubectl create namespace backend-dockyard
 ```
 
 ## ⚙️ Exercises
 
+> 🖥️ **Shell note:** commands are written for **macOS / Linux (zsh/bash)**.
+> On **Windows PowerShell** swap `/` for `\` in paths and use the Windows
+> variants shown inline for base64 decoding.
+
 ---
 ### 🧪 Exercise 1 — Create the ConfigMap
 
-```powershell
+```bash
 # Navigate to the folder
-cd kubernetes\k8s-intermediate\01-configmap-secret
+cd kubernetes/k8s-intermediate/01-configmap-secret
  
 # Apply the ConfigMap
 kubectl apply -f configmap.yaml -n backend-dockyard
@@ -125,7 +129,7 @@ kubectl get configmap app-config -n backend-dockyard -o yaml
 
 ### 🔐 Exercise 2 — Create the Secret
 
-```powershell
+```bash
 # Apply the Secret
 kubectl apply -f secret.yaml -n backend-dockyard
  
@@ -140,19 +144,22 @@ kubectl describe secret app-secret -n backend-dockyard
 kubectl get secret app-secret -n backend-dockyard -o yaml
  
 # Decode a specific value to verify it is correct
-# -o jsonpath extracts one field from the output
-# The piped base64 -d decodes it
-kubectl get secret app-secret -n backend-dockyard `
-  -o jsonpath="{.data.DB_PASSWORD}" | `
-  % { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) }
+# -o jsonpath extracts one field, base64 -d decodes it
+kubectl get secret app-secret -n backend-dockyard \
+  -o jsonpath="{.data.DB_PASSWORD}" | base64 -d ; echo
 # Expected output: apppass
+#
+# 🪟 Windows PowerShell equivalent:
+#   kubectl get secret app-secret -n backend-dockyard `
+#     -o jsonpath="{.data.DB_PASSWORD}" | `
+#     % { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) }
 ```
  
 ---
 
 ### 🚀 Exercise 3 — Deploy With Config Injected
 
-```powershell
+```bash
 # Apply the Deployment that reads from ConfigMap and Secret
 kubectl apply -f deployment-with-config.yaml -n backend-dockyard
  
@@ -165,7 +172,7 @@ kubectl get pods -n backend-dockyard -w
 
 ### 🔍 Exercise 4 — Prove Config Is Injected Into the Pod
 
-```powershell
+```bash
 # Get a Pod name
 kubectl get pods -n backend-dockyard
  
@@ -193,7 +200,7 @@ exit
 
 ### 🔄 Exercise 5 — Update ConfigMap Without Rebuilding
 
-```powershell
+```bash
 # Change a value in the ConfigMap
 # Edit LOG_LEVEL from INFO to DEBUG
 kubectl edit configmap app-config -n backend-dockyard
@@ -221,7 +228,7 @@ exit
 
 ### 🛑 Exercise 6 — Clean Up
 
-```powershell
+```bash
 # Delete all resources created in this section
 kubectl delete -f deployment-with-config.yaml -n backend-dockyard
 kubectl delete -f configmap.yaml -n backend-dockyard
