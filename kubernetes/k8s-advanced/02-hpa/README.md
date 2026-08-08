@@ -106,7 +106,7 @@ WHY ASYMMETRIC?
 ## ✅ Prerequisites
 
 ---
-```powershell
+```bash
 # Start minikube if not already running
 minikube start
  
@@ -114,7 +114,7 @@ minikube start
 minikube addons enable metrics-server
  
 # Verify Metrics Server is running
-kubectl get pods -n kube-system | Select-String "metrics-server"
+kubectl get pods -n kube-system | grep metrics-server
 # Wait until it shows Running — takes about 1 minute
  
 # Verify spring-app from 01-spring-boot-k8s is still running
@@ -122,23 +122,28 @@ kubectl get pods -n spring-app
 # Expected: postgres, redis and 2 spring-app Pods all Running
  
 # If spring-app namespace is gone redeploy it
-# cd kubernetes\k8s-advanced\01-spring-boot-k8s
+# cd kubernetes/k8s-advanced/01-spring-boot-k8s
 # kubectl apply -f manifests/namespace.yaml
 # kubectl apply -f manifests/ -n spring-app
  
-# Start minikube tunnel in a SEPARATE PowerShell window
+# Start minikube tunnel in a SEPARATE terminal window
+# (🪟 Windows: use a separate PowerShell window)
 # Keep it running throughout this exercise
 minikube tunnel
 ```
 
 ## ⚙️ Exercises
 
+> 🖥️ **Shell note:** commands are written for **macOS / Linux (zsh/bash)**.
+> On **Windows PowerShell** swap `/` for `\` in the `cd` paths and open
+> separate PowerShell windows where separate terminals are mentioned.
+
 ---
 ### 🧪 Exercise 1 — Apply the HPA
 
-```powershell
+```bash
 # Navigate to the folder
-cd kubernetes\k8s-advanced\02-hpa
+cd kubernetes/k8s-advanced/02-hpa
  
 # Apply the HPA
 kubectl apply -f manifests/hpa.yaml -n spring-app
@@ -157,7 +162,7 @@ kubectl get hpa -n spring-app
 
 ### 📊 Exercise 2 — Verify CPU Metrics Are Working
 
-```powershell
+```bash
 # Check current CPU usage of spring-app Pods
 # TARGETS in HPA should reflect this
 kubectl top pods -n spring-app
@@ -169,8 +174,8 @@ kubectl top pods -n spring-app
 
 ### 💥 Exercise 3 — Generate Load and Watch Scale Up
 
-```powershell
-# Open THREE PowerShell windows:
+```bash
+# Open THREE terminal windows (🪟 Windows: PowerShell windows):
 #
 # Window 1 — watch HPA live
 kubectl get hpa -n spring-app -w
@@ -199,7 +204,7 @@ kubectl logs -f load-test -n spring-app
 
 ### 📉 Exercise 4 — Remove Load and Watch Scale Down
 
-```powershell
+```bash
 # Delete the load test Pod
 kubectl delete -f manifests/load-test.yaml -n spring-app
  
@@ -217,7 +222,7 @@ kubectl get pods -n spring-app -w
 
 ### 🔍 Exercise 5 — Inspect HPA Details
 
-```powershell
+```bash
 # Full HPA description including events
 kubectl describe hpa spring-app-hpa -n spring-app
  
@@ -229,7 +234,7 @@ kubectl describe hpa spring-app-hpa -n spring-app
 
 ### 🛑 Exercise 6 — Clean Up
 
-```powershell
+```bash
 # Delete the HPA
 kubectl delete -f manifests/hpa.yaml -n spring-app
  

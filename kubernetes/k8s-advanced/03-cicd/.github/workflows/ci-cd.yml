@@ -18,8 +18,10 @@
 #
 #   KUBECONFIG_B64
 #     Your kubeconfig file base64 encoded
-#     Generate on Windows PowerShell:
-#     [Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.kube\config"))
+#     Generate:
+#       🍎 macOS:   base64 -i ~/.kube/config | pbcopy
+#       🐧 Linux:   base64 -w0 ~/.kube/config
+#       🪟 Windows: [Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.kube\config"))
 #     Paste the output as the secret value
 #
 # GITHUB_TOKEN is provided automatically — no setup needed

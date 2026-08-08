@@ -63,13 +63,13 @@ Then update the image field in manifests/spring-app.yaml:
 ---
 ```
 # Build and push the Spring Boot image if not already done
-cd docker\spring-docker\03-full-compose\spring-docker-app
+cd docker/spring-docker/03-full-compose/spring-docker-app
 
 docker build -t ghcr.io/YOUR_USERNAME/backend-dockyard/spring-docker-app:latest .
 docker push ghcr.io/YOUR_USERNAME/backend-dockyard/spring-docker-app:latest
 ```
 
-```powershell
+```bash
 # Start minikube
 minikube start
  
@@ -90,22 +90,26 @@ kubectl delete all --all -n backend-dockyard
 
 ## 🚀 Deployment Steps
 
+> 🖥️ **Shell note:** commands are written for **macOS / Linux (zsh/bash)**.
+> On **Windows PowerShell** swap `/` for `\` in `cd` paths, use backtick
+> `` ` `` for line breaks, and the Windows curl form shown inline.
+
 ### Step 1 — Create the Namespace
 
-```powershell
-cd kubernetes\k8s-advanced\01-spring-boot-k8s
+```bash
+cd kubernetes/k8s-advanced/01-spring-boot-k8s
  
 # Create the namespace first
 # All other resources go inside this namespace
 kubectl apply -f manifests/namespace.yaml
  
 # Verify it was created
-kubectl get namespaces | Select-String "spring-app"
+kubectl get namespaces | grep spring-app
 ```
 
 ### Step 2 — Apply ConfigMap and Secret
 
-```powershell
+```bash
 # Apply non-sensitive config
 kubectl apply -f manifests/configmap.yaml -n spring-app
  
@@ -119,7 +123,7 @@ kubectl get secret -n spring-app
 
 ### Step 3 — Deploy PostgreSQL
 
-```powershell
+```bash
 # Deploy PostgreSQL with PersistentVolumeClaim and Service
 kubectl apply -f manifests/postgres.yaml -n spring-app
  
@@ -135,7 +139,7 @@ kubectl get pvc -n spring-app
 
 ### Step 4 — Deploy Redis
 
-```powershell
+```bash
 # Deploy Redis with Service
 kubectl apply -f manifests/redis.yaml -n spring-app
  
@@ -146,7 +150,7 @@ kubectl get pods -n spring-app -w
 
 ### Step 5 — Deploy the Spring Boot App
 
-```powershell
+```bash
 # Deploy Spring Boot with Service and Ingress
 # Make sure you updated YOUR_USERNAME in spring-app.yaml first
 kubectl apply -f manifests/spring-app.yaml -n spring-app
@@ -161,7 +165,7 @@ kubectl get pods -n spring-app -w
 
 ### Step 6 — Verify Everything Is Running
 
-```powershell
+```bash
 # Show all resources in the namespace
 kubectl get all -n spring-app
  
@@ -191,14 +195,18 @@ kubectl get ingress -n spring-app
 ---
 ### Test the API Through Ingress
 
-```powershell
+```bash
 # Get minikube IP
 minikube ip
  
 # Create a product through the Ingress
-curl -X POST http://localhost/api/products `
-  -H "Content-Type: application/json" `
-  -d "{\"name\":\"Laptop\",\"description\":\"Gaming laptop\",\"price\":999.99,\"stock\":10}"
+curl -X POST http://localhost/api/products \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Laptop","description":"Gaming laptop","price":999.99,"stock":10}'
+# 🪟 Windows PowerShell: use backtick ` for line breaks and escape quotes:
+#   curl -X POST http://localhost/api/products `
+#     -H "Content-Type: application/json" `
+#     -d "{\"name\":\"Laptop\",\"description\":\"Gaming laptop\",\"price\":999.99,\"stock\":10}"
  
 # Get all products
 curl http://localhost/api/products
@@ -210,7 +218,7 @@ curl http://localhost/actuator/health
 
 ### Verify Probes Are Working
 
-```powershell
+```bash
 # Describe a spring-app Pod to see probe status
 kubectl get pods -n spring-app
 kubectl describe pod spring-app-xxxxx -n spring-app
@@ -223,7 +231,7 @@ kubectl get pods -n spring-app
 
 ### Verify Redis Caching Works
 
-```powershell
+```bash
 # First GET — hits the database
 curl http://localhost/api/products/1
  
@@ -243,11 +251,12 @@ kubectl exec -it deployment/redis -n spring-app -- redis-cli KEYS *
 
 ### Test Rolling Update
 
-```powershell
+```bash
 # Update the image tag to trigger a rolling update
-kubectl set image deployment/spring-app `
-  spring-app=ghcr.io/YOUR_USERNAME/backend-dockyard/spring-docker-app:latest `
+kubectl set image deployment/spring-app \
+  spring-app=ghcr.io/YOUR_USERNAME/backend-dockyard/spring-docker-app:latest \
   -n spring-app
+# 🪟 Windows PowerShell: replace each trailing \ with a backtick `
  
 # Watch the rolling update — old Pods replaced by new ones
 kubectl get pods -n spring-app -w
@@ -258,11 +267,11 @@ kubectl rollout status deployment/spring-app -n spring-app
 
 ## 🛑 Cleanup
 
-```powershell
+```bash
 # Delete everything by deleting the namespace
 # This removes all resources inside it in one command
 kubectl delete namespace spring-app
  
 # Verify
-kubectl get namespaces | Select-String "spring-app"
+kubectl get namespaces | grep spring-app
 ```

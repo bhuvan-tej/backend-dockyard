@@ -51,15 +51,27 @@ Pipeline marked as FAILED so you know to investigate
 
 # ⚙️ Setup — One Time Only
 
+> 🖥️ **Shell note:** the base64 kubeconfig command differs per OS — macOS,
+> Linux and Windows variants are all shown. Everything else (`git`,
+> `kubectl`, `curl`) is identical on every OS.
+
 ---
 ### 🔑 Step 1 — Generate KUBECONFIG Secret
 
-```powershell
-# Get your kubeconfig and encode it to base64
-# Run this in PowerShell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.kube\config"))
- 
-# Copy the entire output — it will be a long string
+```bash
+# Get your kubeconfig and encode it to base64, copied to the clipboard
+# 🍎 macOS:
+base64 -i ~/.kube/config | pbcopy
+
+# 🐧 Linux:
+base64 -w0 ~/.kube/config | xclip -selection clipboard   # or | xsel -b
+
+# 🪟 Windows PowerShell:
+# [Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.kube\config"))
+
+# If you cannot pipe to a clipboard tool, just print it and copy manually:
+base64 ~/.kube/config
+# Copy the entire output — it will be a long single-line string
 ```
 
 ### 🔐 Step 2 — Add Secret to GitHub
@@ -97,7 +109,7 @@ without needing authentication credentials
 ## 🚀 How to Trigger the Pipeline
 
 ---
-```powershell
+```bash
 # Make any change to the Spring Boot app
 # For example add a comment in ProductController.java
  
@@ -130,7 +142,7 @@ Click any job to see detailed logs including:
 ## 🔍 Verifying the Deploy Worked
 
 ---
-```powershell
+```bash
 # After the pipeline succeeds check the running image
 kubectl get pods -n spring-app -o jsonpath="{.items[*].spec.containers[*].image}"
 # Should show the sha- tagged image from the latest commit
@@ -148,8 +160,9 @@ curl http://localhost/api/products
 ---
 ```
 1. minikube tunnel must be running for localhost to work
-   Open a separate PowerShell window and keep it running:
+   Open a separate terminal window and keep it running:
    minikube tunnel
+   (🪟 Windows: use a separate PowerShell window)
  
 2. Ingress paths use Prefix type with no rewrite
    /api   → spring-app-service:8080

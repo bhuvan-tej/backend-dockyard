@@ -1,7 +1,7 @@
 ## 📋 Quick Reference
 
 ---
-```powershell
+```bash
 # Enable Metrics Server
 minikube addons enable metrics-server
  
