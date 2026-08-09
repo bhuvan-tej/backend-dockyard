@@ -1,8 +1,8 @@
 # 12 · Spring AI
 
-> Based on `04-spring-ai-basics` (ChatClient + structured output),
-> `05-semantic-search` (embeddings + vector store), `06-tool-calling` (function
-> calling) and `07-ai-rag-service` (embeddings + vector store + RAG).
+> Based on `spring-ai/01-spring-ai-basics` (ChatClient + structured output),
+> `spring-ai/02-semantic-search` (embeddings + vector store), `spring-ai/03-tool-calling`
+> (function calling) and `spring-ai/04-ai-rag-service` (embeddings + vector store + RAG).
 
 ---
 

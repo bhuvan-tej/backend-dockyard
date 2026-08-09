@@ -24,7 +24,7 @@ under the hood (`@Component`), but the specific name documents the class's **rol
 ### `@Component`
 - 🧩 Generic "this is a Spring-managed bean".
 - 🎯 Use for helper/util classes that don't fit service/repo/controller.
-- 🧪 `@Component public class TextChunker { ... }` (in `07-ai-rag-service`)
+- 🧪 `@Component public class TextChunker { ... }` (in `spring-ai/04-ai-rag-service`)
 
 ### `@Service`
 - 🧩 A `@Component` that marks the **business-logic** layer.

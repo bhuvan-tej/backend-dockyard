@@ -2,7 +2,8 @@
 
 > Hands-on, interview-ready notes for the Spring Boot projects in this repo.
 > Every annotation is explained in plain English, with **what it does**, **why it exists**,
-> and a **real example** taken from the projects here (`01-rest-api-crud` → `07-ai-rag-service`).
+> and a **real example** taken from the projects here (`spring-boot/01-rest-api-crud` → the
+> `spring-ai/` apps).
 
 ---
 
@@ -77,9 +78,9 @@ Legend used throughout:
 | `01-rest-api-crud`    | CRUD REST API | DTOs, validation, pagination, exception handling           |
 | `02-qr-generator`     | Utility API   | Services, binary responses                                 |
 | `03-otp-jwt-auth`     | Auth          | Spring Security, JWT, OTP, refresh rotation                |
-| `04-spring-ai-basics` | AI            | Spring AI ChatClient, structured output                    |
-| `05-semantic-search`  | AI            | Embeddings, vector store, semantic search (the "R" of RAG) |
-| `06-tool-calling`     | AI            | Tool/function calling — the LLM calls your Java methods    |
-| `07-ai-rag-service`   | AI + data     | Embeddings, vector store, RAG pipeline                     |
+| `spring-ai/01-spring-ai-basics` | AI  | Spring AI ChatClient, structured output                    |
+| `spring-ai/02-semantic-search`  | AI  | Embeddings, vector store, semantic search (the "R" of RAG) |
+| `spring-ai/03-tool-calling`     | AI  | Tool/function calling — the LLM calls your Java methods    |
+| `spring-ai/04-ai-rag-service`   | AI + data | Embeddings, vector store, RAG pipeline               |
 
 Happy learning! Start with **[01 – Fundamentals](./01-spring-boot-fundamentals.md)**.
