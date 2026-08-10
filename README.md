@@ -80,6 +80,7 @@ backend-dockyard/
 ├── docker/                     Containerisation from zero to CI/CD
 ├── kubernetes/                 Orchestration from local cluster to production
 ├── spring-boot/                Real Spring Boot apps, each fully runnable
+├── spring-ai/                  LLM / Spring AI apps — ChatClient, RAG, tools, MCP
 ├── design-patterns/            GoF patterns applied to actual Spring Boot code
 └──  dsa/                       Interview DSA in Java with full explanations
 ```
@@ -111,14 +112,15 @@ Learning Docker the right way — not just what commands to run but why each one
 
 | Topic                                             | Folder                                          | Status  |
 |---------------------------------------------------|-------------------------------------------------|---------|
-| K8s concepts — control plane, nodes, core objects | `kubernetes/k8s-basics/01-concepts`             | ✅ Done |
-| Pods and Deployments — self healing and scaling   | `kubernetes/k8s-basics/02-deployments`          | ✅ Done |
-| Services — ClusterIP, NodePort, LoadBalancer      | `kubernetes/k8s-basics/03-services`             | ✅ Done |
-| ConfigMap and Secrets                             | `kubernetes/k8s-intermediate/01-config-secrets` | ✅ Done |
-| Liveness, Readiness and Startup probes            | `kubernetes/k8s-intermediate/02-probes`         | ✅ Done |
-| Ingress and routing                               | `kubernetes/k8s-intermediate/03-ingress`        | ✅ Done |
-| HPA — auto scaling based on CPU and memory        | `kubernetes/k8s-advanced/01-hpa`                | ✅ Done |
-| GitHub Actions CI/CD pipeline to Kubernetes       | `kubernetes/k8s-advanced/02-cicd`               | ✅ Done |
+| K8s concepts — control plane, nodes, core objects | `kubernetes/k8s-basics/01-concepts`                | ✅ Done |
+| Pods and Deployments — self healing and scaling   | `kubernetes/k8s-basics/02-pods-deployments`        | ✅ Done |
+| Services — ClusterIP, NodePort, LoadBalancer      | `kubernetes/k8s-basics/03-services`                | ✅ Done |
+| ConfigMap and Secrets                             | `kubernetes/k8s-intermediate/01-configmap-secret`  | ✅ Done |
+| Liveness, Readiness and Startup probes            | `kubernetes/k8s-intermediate/02-probes`            | ✅ Done |
+| Ingress and routing                               | `kubernetes/k8s-intermediate/03-ingress`           | ✅ Done |
+| Spring Boot on K8s — full stack deploy            | `kubernetes/k8s-advanced/01-spring-boot-k8s`       | ✅ Done |
+| HPA — auto scaling based on CPU and memory        | `kubernetes/k8s-advanced/02-hpa`                   | ✅ Done |
+| GitHub Actions CI/CD pipeline to Kubernetes       | `kubernetes/k8s-advanced/03-cicd`                  | ✅ Done |
 
 ## 🌱 Spring Boot Projects
 
