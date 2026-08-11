@@ -1,0 +1,27 @@
+# Docker Compose for the Java Streams demo.
+#
+# No external services needed — start it with:
+#
+#   docker compose up --build
+#
+#   - Swagger UI → http://localhost:8080/api/swagger-ui.html
+#   - Health     → http://localhost:8080/api/actuator/health
+
+services:
+  java-streams:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dockyard/java-streams:1.0.0
+    container_name: java-streams
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
