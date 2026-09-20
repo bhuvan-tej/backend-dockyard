@@ -14,47 +14,34 @@
 ---
 **Languages & Frameworks**
 
-<p>
-  <img src="assets/tech/java.svg" width="44" height="44" alt="Java 17 / 21" title="Java 17 / 21"/>&nbsp;&nbsp;
-  <img src="assets/tech/spring.svg" width="44" height="44" alt="Spring Boot 3" title="Spring Boot 3"/>&nbsp;&nbsp;
-  <img src="assets/tech/springsecurity.svg" width="44" height="44" alt="Spring Security" title="Spring Security"/>&nbsp;&nbsp;
-  <img src="assets/tech/springai.svg" width="44" height="44" alt="Spring AI" title="Spring AI"/>&nbsp;&nbsp;
-  <img src="assets/tech/hibernate.svg" width="44" height="44" alt="Hibernate / JPA" title="Hibernate / JPA"/>&nbsp;&nbsp;
-  <img src="assets/tech/maven.svg" width="44" height="44" alt="Maven" title="Maven"/>
-</p>
-
-`Java 17/21` · `Spring Boot 3` · `Spring Security` · `Spring AI` · `Hibernate / JPA` · `Maven`
+![Java](https://img.shields.io/badge/Java-17%20%2F%2021-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring%20Security-Auth%20%26%20JWT-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
+![Spring AI](https://img.shields.io/badge/Spring%20AI-LLM%20%2F%20RAG%20%2F%20MCP-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![Hibernate](https://img.shields.io/badge/Hibernate-JPA-59666C?style=for-the-badge&logo=hibernate&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-Build%20Tool-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
 
 **Databases & Caching**
 
-<p>
-  <img src="assets/tech/postgresql.svg" width="44" height="44" alt="PostgreSQL" title="PostgreSQL 15"/>&nbsp;&nbsp;
-  <img src="assets/tech/redis.svg" width="44" height="44" alt="Redis" title="Redis 7"/>
-</p>
-
-`PostgreSQL 15` · `Redis 7` · `H2 Database`
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![H2](https://img.shields.io/badge/H2-In--Memory%20DB-1E88E5?style=for-the-badge&logo=databricks&logoColor=white)
 
 **Containers & Orchestration**
 
-<p>
-  <img src="assets/tech/docker.svg" width="44" height="44" alt="Docker" title="Docker & Docker Compose"/>&nbsp;&nbsp;
-  <img src="assets/tech/kubernetes.svg" width="44" height="44" alt="Kubernetes" title="Kubernetes"/>&nbsp;&nbsp;
-  <img src="assets/tech/nginx.svg" width="44" height="44" alt="NGINX" title="NGINX"/>
-</p>
-
-`Docker` · `Docker Compose` · `Kubernetes` · `NGINX`
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Orchestration-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
+![NGINX](https://img.shields.io/badge/NGINX-Reverse%20Proxy-009639?style=for-the-badge&logo=nginx&logoColor=white)
 
 **Libraries, CI/CD & Tooling**
 
-<p>
-  <img src="assets/tech/jwt.svg" width="44" height="44" alt="JWT (JJWT)" title="JWT (JJWT)"/>&nbsp;&nbsp;
-  <img src="assets/tech/swagger.svg" width="44" height="44" alt="OpenAPI / Swagger" title="OpenAPI / Swagger"/>&nbsp;&nbsp;
-  <img src="assets/tech/ollama.svg" width="44" height="44" alt="Ollama" title="Ollama (local LLM)"/>&nbsp;&nbsp;
-  <img src="assets/tech/githubactions.svg" width="44" height="44" alt="GitHub Actions" title="GitHub Actions"/>&nbsp;&nbsp;
-  <img src="assets/tech/intellij.svg" width="44" height="44" alt="IntelliJ IDEA" title="IntelliJ IDEA"/>
-</p>
-
-`JWT (JJWT)` · `OpenAPI / Swagger` · `Ollama` · `Vector Store (RAG)` · `ZXing (QR)` · `Lombok` · `GitHub Actions` · `IntelliJ IDEA`
+![JWT](https://img.shields.io/badge/JWT-JJWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+![Swagger](https://img.shields.io/badge/OpenAPI-Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
+![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-000000?style=for-the-badge&logo=ollama&logoColor=white)
+![Vector Store](https://img.shields.io/badge/Vector%20Store-RAG-4B8BBE?style=for-the-badge&logo=databricks&logoColor=white)
+![Lombok](https://img.shields.io/badge/Lombok-Boilerplate%20Killer-BC0031?style=for-the-badge&logo=lombok&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ%20IDEA-IDE-000000?style=for-the-badge&logo=intellijidea&logoColor=white)
 
 ---
 A place where backend systems are built, containerized, orchestrated and shipped.
@@ -81,8 +68,9 @@ backend-dockyard/
 ├── kubernetes/                 Orchestration from local cluster to production
 ├── spring-boot/                Real Spring Boot apps, each fully runnable
 ├── spring-ai/                  LLM / Spring AI apps — ChatClient, RAG, tools, MCP
-├── design-patterns/            GoF patterns applied to actual Spring Boot code
-└──  dsa/                       Interview DSA in Java with full explanations
+├── microservices/              Interview-focused distributed system patterns
+├── design-patterns/            GoF patterns in plain Java
+└── dsa/                        Interview DSA in Java with full explanations
 ```
 
 ## 🐳 Docker
